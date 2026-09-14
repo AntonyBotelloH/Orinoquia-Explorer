@@ -1,0 +1,42 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local environments & dependencies
+venv/
+.venv/
+env/
+ENV/
+pythonenv/
+/pip-wheel-metadata/
+/wheels/
+
+# Django local configuration & databases
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Secrets and environment variables
+.env
+.env.local
+
+# Media uploads and static collection
+media/
+staticfiles/
+static_cdn/
+
+# Logs
+*.log
+
+# Testing & Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# IDE and OS specific files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
