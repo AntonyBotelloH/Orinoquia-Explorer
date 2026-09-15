@@ -1,0 +1,120 @@
+/* ==========================================
+   ORINOQUIA EXPLORER - ESTILOS PRINCIPALES
+   ========================================== */
+
+/* Variables de Color (Paleta Llanera) */
+:root {
+    --primary-color: #d97706;      /* Naranja atardecer / Ocre */
+    --secondary-color: #15803d;    /* Verde morichal / Sabana */
+    --dark-bg: #1e293b;            /* Gris oscuro moderno */
+    --light-bg: #f8fafc;           /* Fondo gris claro */
+    --accent-color: #fbbf24;       /* Amarillo sabanero */
+}
+
+/* Tipografía y Estilos Generales */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--light-bg);
+    color: #334155;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}
+
+/* ==========================================
+   1. NAVBAR
+   ========================================== */
+.navbar {
+    background-color: var(--dark-bg) !important;
+    border-bottom: 3px solid var(--primary-color);
+}
+
+.navbar-brand {
+    font-size: 1.3rem;
+    letter-spacing: 0.5px;
+}
+
+.navbar-nav .nav-link {
+    color: #e2e8f0 !important;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    color: var(--accent-color) !important;
+}
+
+/* ==========================================
+   2. HERO SECTION
+   ========================================== */
+.hero-section {
+    background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)), 
+                url('../images/orinoquia-hero.jpg') no-repeat center center;
+    background-size: cover;
+    padding: 100px 0;
+    border-bottom: 5px solid var(--accent-color);
+}
+
+.hero-section h1 {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* ==========================================
+   3. TARJETAS Y CONTENIDO
+   ========================================== */
+.card {
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ==========================================
+   4. SIDEBAR (ASIDE)
+   ========================================== */
+aside.sidebar {
+    background-color: #ffffff;
+    border-radius: 12px;
+    border-left: 4px solid var(--secondary-color);
+}
+
+aside .card {
+    background-color: #f1f5f9;
+}
+
+/* ==========================================
+   5. FOOTER
+   ========================================== */
+footer {
+    background-color: var(--dark-bg);
+    color: #cbd5e1;
+    border-top: 4px solid var(--primary-color);
+}
+
+footer h5 {
+    letter-spacing: 0.5px;
+}
+
+footer a:hover {
+    color: var(--accent-color) !important;
+    text-decoration: underline !important;
+}
+
+/* ==========================================
+   6. CLASES UTILITARIAS (Para textos e íconos)
+   ========================================== */
+.text-orinoquia-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-orinoquia-secondary {
+    color: var(--secondary-color) !important;
+}
