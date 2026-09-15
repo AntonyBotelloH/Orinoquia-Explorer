@@ -1,0 +1,34 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <!-- Logo / Marca -->
+        <a class="navbar-brand fw-bold text-warning" href="{% url 'index_usuario' %}">
+            🧭 Orinoquia Explorer
+        </a>
+        
+        <!-- Botón responsive para móviles -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Enlaces del menú -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'index_usuario' %}">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Destinos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Experiencias</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Cultura y Gastronomía</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Contacto</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
