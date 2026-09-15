@@ -6,12 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orinoquia Explorer</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 </head>
 <body>
 
-    {% include 'nav' %}
+    {% include 'partials/nav.html' %}
 
-    {% include 'header' %}
+    {% include 'partials/header.html' %}
     
     <main class="container my-5">
         <div class="row">
@@ -23,12 +24,13 @@
         </div>
 
         <div class="col-lg-4">
-            {% include 'aside' %}
+            {% include 'partials/aside.html' %}
         </div>
     </main>
-    {% include 'footer' %}
+    {% include 'partials/footer.html' %}
 
     {% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>            
     {% endblock scripts %}
 </body>
 </html>
