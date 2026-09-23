@@ -1,24 +1,33 @@
 {% extends 'partials/base-admin.html' %}
 
-
 {% block content %}
-    <a href="{% url 'categoria_crear' %}" class="btn btn-primary">Crear Categoria</a>
-<table>
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Estado</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for categoria in categorias %}
-        <tr>
-            <td>{{categoria.nombre}}</td>
-            <td>{{categoria.descripcion}}</td>
-            <td>{% if categoria.estado %} Activo {% else %} Inactivo {% endif %}</td>
-        </tr>
-        {%endfor%}
-    </tbody>
-</table>
+    <a href="{% url 'categoria_crear' %}" class="btn btn-primary mb-3">Crear Categoria</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for categoria in categorias %}
+            <tr>
+                <td>{{ categoria.nombre }}</td>
+                <td>{{ categoria.descripcion }}</td>
+                <td>{% if categoria.estado %} Activo {% else %} Inactivo {% endif %}</td>
+                <td>
+                    <a href="{% url 'categoria_editar' categoria.id %}" class="btn btn-primary btn-sm">Editar</a>
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ categoria.id }}">
+                        Eliminar
+                    </button>
+
+                    {% url 'categoria_eliminar' categoria.id as url_dinamica %}
+                    {% include 'partials/modal-delete.html' with id_objeto=categoria.id titulo_modal=titulo nombre_objeto=categoria.nombre url_post=url_dinamica %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% endblock content %}

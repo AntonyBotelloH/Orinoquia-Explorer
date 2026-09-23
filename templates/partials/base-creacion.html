@@ -6,7 +6,7 @@
     <div class="container-lg">
         <div class="row">
             <div class="col-12">
-                <h1>Crear {{titulo}}</h1>
+                <h1>{{accion}} {{titulo}}</h1>
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ form|crispy }}
