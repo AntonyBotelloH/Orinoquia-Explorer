@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{titulo}} | Orinoquia Explorer</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Custom Admin CSS -->
+    <link rel="stylesheet" href="{% static 'css/admin-style.css' %}">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3>Orinoquia</h3>
+            </div>
+            <ul class="list-unstyled components">
+                <li>
+                    <a href="#"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                </li>
+                <li>
+                    <a href="{% url 'categoria_listar' %}"><i class="bi bi-tags"></i> Categorías</a>
+                </li>
+                <li>
+                    <a href="{% url 'experiencia_listar' %}"><i class="bi bi-compass"></i> Experiencias</a>
+                </li>
+                <li>
+                    <a href="#"><i class="bi bi-chat-left-text"></i> Reseñas</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-expand-lg top-navbar">
+                <div class="container-fluid">
+                    <span class="navbar-brand mb-0 h1">{{ titulo|default:"Panel de Control" }}</span>
+                    <div class="d-flex align-items-center">
+                        <span class="me-3 fw-bold" style="color: var(--brand-primary)">Admin</span>
+                        <i class="bi bi-person-circle fs-3 text-secondary"></i>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Body Content -->
+            <div class="main-body">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Toasts para Messages -->
+    {% if messages %}
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+        {% for message in messages %}
+            <div class="toast align-items-center text-white bg-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}primary{% endif %} border-0" 
+                role="alert" aria-live="assertive" aria-atomic="true">
+                
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-info-circle me-2"></i> {{ message }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Script para inicializar y mostrar los Toasts automáticamente -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Activar enlace activo en el sidebar basado en la URL
+            const currentUrl = window.location.pathname;
+            const sidebarLinks = document.querySelectorAll('#sidebar ul li a');
+            sidebarLinks.forEach(link => {
+                if(link.getAttribute('href') !== '#' && currentUrl.includes(link.getAttribute('href'))) {
+                    link.parentElement.classList.add('active');
+                }
+            });
+
+            // Inicializar Toasts
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            var toastList = toastElList.map(function (toastEl) {
+                return new bootstrap.Toast(toastEl, { delay: 4000 });
+            });
+            toastList.forEach(function (toast) {
+                toast.show();
+            });
+        });
+    </script>
+    
+    {% block script %}{% endblock script %}
+</body>
+</html>
