@@ -15,7 +15,7 @@ class Experiencia(models.Model):
     nombre = models.CharField(max_length=100, verbose_name="Nombre")
     descripcion = models.TextField(verbose_name="Descripcion")
     imagen = models.ImageField(upload_to=renombrar_imagen, verbose_name="Imagen")
-    precio = models.FloatField(verbose_name="Precio")
+    precio = models.FloatField(verbose_name="Precio",)
     duracion = models.IntegerField(verbose_name="Duración")
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, verbose_name="Categoría")
     estado= models.BooleanField(default=True, verbose_name="Estado")

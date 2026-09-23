@@ -23,7 +23,9 @@ def crear_categoria(request):
             messages.success(request, f'Categoría {request.POST.get("nombre")} creada correctamente.')
             return redirect('categoria_listar')
         else:
-            messages.error(request, 'Por favor corrige los errores del formulario.')
+            for campo, errores in form.errors.items():
+                for error in errores:
+                    messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
     context = {
         'titulo': titulo,
         'form': form,
@@ -43,7 +45,9 @@ def editar_categoria(request, id):
             messages.success(request, 'Categoría actualizada correctamente.')
             return redirect('categoria_listar')
         else:
-            messages.error(request, 'Por favor corrige los errores del formulario.')
+            for campo, errores in form.errors.items():
+                for error in errores:
+                    messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
 
     context = {
         'titulo': titulo,
@@ -79,7 +83,9 @@ def crear_experiencia(request):
             messages.success(request, 'Experiencia creada correctamente.')
             return redirect('experiencia_listar')
         else:
-            messages.error(request, 'Por favor corrige los errores del formulario.')
+            for campo, errores in form.errors.items():
+                for error in errores:
+                    messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
     context = {
         'titulo': titulo,
         'form': form,
