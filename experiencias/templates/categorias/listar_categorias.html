@@ -1,0 +1,24 @@
+{% extends 'partials/base-admin.html' %}
+
+
+{% block content %}
+    <a href="{% url 'categoria_crear' %}" class="btn btn-primary">Crear Categoria</a>
+<table>
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for categoria in categorias %}
+        <tr>
+            <td>{{categoria.nombre}}</td>
+            <td>{{categoria.descripcion}}</td>
+            <td>{% if categoria.estado %} Activo {% else %} Inactivo {% endif %}</td>
+        </tr>
+        {%endfor%}
+    </tbody>
+</table>
+{% endblock content %}

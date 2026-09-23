@@ -1,0 +1,30 @@
+{% extends 'partials/base-admin.html' %}
+
+
+{% block content %}
+    <a href="{% url 'experiencia_crear' %}" class="btn btn-primary">Crear Experiencia</a>
+<table>
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Precio</th>
+            <th>Duración</th>
+            <th>Categoria</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for experiencia in experiencias %}
+        <tr>
+            <td>{{experiencia.nombre}}</td>
+            <td>{{experiencia.descripcion}}</td>
+            <td>{{experiencia.precio}}</td>
+            <td>{{experiencia.duracion}}</td>
+            <td>{{experiencia.categoria}}</td>
+            <td>{% if experiencia.estado %} Activo {% else %} Inactivo {% endif %}</td>
+        </tr>
+        {%endfor%}
+    </tbody>
+</table>
+{% endblock content %}

@@ -1,18 +1,18 @@
 from django.forms import ModelForm
 from .models import Categoria, Resena, Experiencia
 
-class CategoriaForm(forms.ModelForm):
+class CategoriaForm(ModelForm):
     class Meta:
         model = Categoria
         fields= '__all__'
         exclude = ['estado']
-class ExperienciaForm(forms.ModelForm):
+class ExperienciaForm(ModelForm):
     class Meta:
         model = Experiencia
         fields= '__all__'
         exclude = ['estado']
 
-class ResenaForm(forms.ModelForm):
+class ResenaForm(ModelForm):
     class Meta:
         model = Resena
         fields= '__all__'
