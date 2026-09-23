@@ -1,6 +1,7 @@
 {% extends 'partials/base-admin.html' %}
 {% load static %}
 
+{% load crispy_forms_tags %}
 {% block content %}
     <div class="container-lg">
         <div class="row">
@@ -8,7 +9,7 @@
                 <h1>Crear {{titulo}}</h1>
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    {{ form.as_p }}
+                    {{ form|crispy }}
                     <button type="submit">Guardar</button>
                 </form>
             </div>
