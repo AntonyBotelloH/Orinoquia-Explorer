@@ -6,6 +6,7 @@ def renombrar_imagen(instance, filename):
 class Categoria(models.Model):
     nombre = models.CharField(max_length=100, verbose_name="Nombre")
     descripcion = models.TextField(verbose_name="Descripcion")
+    estado= models.BooleanField(default=True, verbose_name="Estado")
     def __str__(self):
         return self.nombre
     
@@ -17,6 +18,8 @@ class Experiencia(models.Model):
     precio = models.FloatField(verbose_name="Precio")
     duracion = models.IntegerField(verbose_name="Duracion")
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, verbose_name="Categoria")
+    estado= models.BooleanField(default=True, verbose_name="Estado")
+    
     def __str__(self):
         return self.nombre
 
@@ -26,4 +29,4 @@ class Resena(models.Model):
     calificacion = models.IntegerField(verbose_name="Calificación")
     comentario = models.TextField(verbose_name="Comentario")
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creacion")
-    
+     
