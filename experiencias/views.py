@@ -15,6 +15,8 @@ def crear_categoria(request):
         if form.is_valid():
             form.save()
             return redirect('categoria_listar')
+        else:
+            print(form.errors)
     context={
         'titulo':titulo,
         'form':form
