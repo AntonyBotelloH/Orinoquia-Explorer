@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Categoria, Experiencia, Resena
 from .forms import CategoriaForm, ExperienciaForm
-
+from django.contrib import messages
 # Create your views here.
 def listar_categoria(request):
     categorias = Categoria.objects.all()
@@ -20,9 +20,10 @@ def crear_categoria(request):
         form = CategoriaForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, f'Categoría {request.POST.get("nombre")} creada correctamente.')
             return redirect('categoria_listar')
         else:
-            print(form.errors)
+            messages.error(request, 'Por favor corrige los errores del formulario.')
     context = {
         'titulo': titulo,
         'form': form,
@@ -39,9 +40,11 @@ def editar_categoria(request, id):
         form = CategoriaForm(request.POST, instance=categoria)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Categoría actualizada correctamente.')
             return redirect('categoria_listar')
         else:
-            print(form.errors)
+            messages.error(request, 'Por favor corrige los errores del formulario.')
+
     context = {
         'titulo': titulo,
         'form': form,
@@ -55,6 +58,7 @@ def eliminar_categoria(request, id):
     if request.method == 'POST':
         objeto.estado = False
         objeto.save()
+        messages.success(request, 'Categoría eliminada correctamente.')
         
     return redirect('categoria_listar')
 
@@ -72,7 +76,10 @@ def crear_experiencia(request):
         form = ExperienciaForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Experiencia creada correctamente.')
             return redirect('experiencia_listar')
+        else:
+            messages.error(request, 'Por favor corrige los errores del formulario.')
     context = {
         'titulo': titulo,
         'form': form,
