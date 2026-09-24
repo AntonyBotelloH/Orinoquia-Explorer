@@ -6,6 +6,9 @@
     --brand-dark: #121212; /* Texto oscuro */
 }
 
+.error-p{
+    background-color: #e07b00;
+}
 body {
     background-color: var(--brand-light);
     color: var(--brand-dark);
