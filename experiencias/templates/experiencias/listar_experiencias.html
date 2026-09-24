@@ -1,30 +1,75 @@
 {% extends 'partials/base-admin.html' %}
-
-
+{% load static %}
 {% block content %}
-    <a href="{% url 'experiencia_crear' %}" class="btn btn-primary">Crear Experiencia</a>
-<table>
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Precio</th>
-            <th>Duración</th>
-            <th>Categoria</th>
-            <th>Estado</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for experiencia in experiencias %}
-        <tr>
-            <td>{{experiencia.nombre}}</td>
-            <td>{{experiencia.descripcion}}</td>
-            <td>{{experiencia.precio}}</td>
-            <td>{{experiencia.duracion}}</td>
-            <td>{{experiencia.categoria}}</td>
-            <td>{% if experiencia.estado %} Activo {% else %} Inactivo {% endif %}</td>
-        </tr>
-        {%endfor%}
-    </tbody>
-</table>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold" style="color: var(--brand-primary);">{{ titulo|default:"Gestión de Experiencias" }}</h2>
+        {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
+        <a href="{% url 'experiencia_crear' %}" class="btn btn-primary fw-bold">
+            <i class="bi bi-compass me-2"></i> Crear Experiencia
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="tablaExperiencias" class="table table-hover align-middle mb-0 w-100 nowrap">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-4">Nombre</th>
+                            <th>Descripción</th>
+                            <th>Precio</th>
+                            <th>Duración</th>
+                            <th>Categoría</th>
+                            <th>Estado</th>
+                            <th class="text-center pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for experiencia in experiencias %}
+                        <tr>
+                            <td class="ps-4 fw-bold" style="color: var(--brand-secondary);">{{ experiencia.nombre }}</td>
+                            <td>{{ experiencia.descripcion|truncatechars:50 }}</td>
+                            <td class="fw-bold">${{ experiencia.precio }}</td>
+                            <td><i class="bi bi-clock me-1"></i> {{ experiencia.duracion }}</td>
+                            <td>{{ experiencia.categoria }}</td>
+                            <td>
+                                {% if experiencia.estado %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Activo</span>
+                                {% else %}
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center pe-4">
+                                <div class="d-flex justify-content-center gap-1">
+                                    <button class="btn btn-sm btn-outline-info" title="Visualizar">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
+                                    <!-- Aún no hay URL de editar/eliminar para experiencia, se dejan desactivados -->
+                                    <button type="button" class="btn btn-sm btn-outline-primary disabled" title="Editar (Próximamente)">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger disabled" title="Eliminar (Próximamente)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="bi bi-compass fs-1 d-block mb-3 text-light"></i>
+                                No hay experiencias registradas.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
+{% block script %}
+{% endblock script %}
