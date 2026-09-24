@@ -18,13 +18,13 @@ $(document).ready(function() {
                 extend: 'excelHtml5',
                 text: '<i class="bi bi-file-earmark-excel"></i> Excel',
                 className: 'btn btn-success btn-sm me-2 shadow-sm',
-                exportOptions: { columns: [0, 1, 2, 3] } 
+                exportOptions: { columns: [0, 1, 2] } 
             },
             {
                 extend: 'pdfHtml5',
                 text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
                 className: 'btn btn-danger btn-sm shadow-sm',
-                exportOptions: { columns: [0, 1, 2, 3] }
+                exportOptions: { columns: [0, 1, 2] }
             }
         ],
 
