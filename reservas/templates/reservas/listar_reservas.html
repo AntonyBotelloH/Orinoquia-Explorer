@@ -1,0 +1,79 @@
+{% extends 'partials/base-admin.html' %}
+{% load static %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold" style="color: var(--brand-primary);">{{ titulo|default:"Gestión de Reservas" }}</h2>
+        {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
+        <a href="{% url 'reserva_crear' %}" class="btn btn-primary fw-bold">
+            <i class="bi bi-calendar-plus me-2"></i> Nueva Reserva
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="tablaReservas" class="table table-hover align-middle mb-0 w-100 nowrap">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Usuario</th>
+                            <th>Experiencia</th>
+                            <th>Fecha</th>
+                            <th>Personas</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th class="text-center pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in reservas %}
+                        <tr>
+                            <td class="ps-4 fw-bold" style="color: var(--brand-secondary);">{{ reserva.usuario.first_name }} {{ reserva.usuario.last_name }}</td>
+                            <td>{{ reserva.experiencia.nombre }}</td>
+                            <td>{{ reserva.fecha|date:"d M Y" }}</td>
+                            <td><i class="bi bi-people-fill me-1"></i> {{ reserva.numero_personas }}</td>
+                            <td class="fw-bold">${{ reserva.precio_total }}</td>
+                            <td>
+                                {% if reserva.estado == 'CONFIRMADA' %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>{{ reserva.get_estado_display }}</span>
+                                {% elif reserva.estado == 'CANCELADA' %}
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>{{ reserva.get_estado_display }}</span>
+                                {% else %}
+                                    <span class="badge" style="background-color: var(--brand-accent); color: var(--brand-dark);"><i class="bi bi-clock me-1"></i>{{ reserva.get_estado_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center pe-4">
+                                <div class="d-flex justify-content-center gap-1">
+                                    <button class="btn btn-sm btn-outline-info" title="Visualizar">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
+                                    <a href="{% url 'reserva_editar' reserva.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ reserva.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    
+                                    {% url 'reserva_eliminar' reserva.id as url_dinamica %}
+                                    {% include 'partials/modal-delete.html' with id_objeto=reserva.id titulo_modal=titulo nombre_objeto="esta reserva" url_post=url_dinamica %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="bi bi-calendar-x fs-1 d-block mb-3 text-light"></i>
+                                No hay reservas registradas.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+{% block script %}
+{% endblock script %}
