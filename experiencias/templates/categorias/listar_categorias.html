@@ -1,8 +1,8 @@
 {% extends 'partials/base-admin.html' %}
-
+{% load static %}
 {% block content %}
     <a href="{% url 'categoria_crear' %}" class="btn btn-primary mb-3">Crear Categoria</a>
-    <table class="table">
+    <table id="tablaCategorias" class="table table-hover table-striped align-middle w-100 nowrap">
         <thead>
             <tr>
                 <th>Nombre</th>
@@ -35,3 +35,6 @@
         </tbody>
     </table>
 {% endblock content %}
+{% block script %}
+<script src="{% static 'js/DataTables/tconf/tCategorias-config.js' %}"></script>
+{% endblock script %}
