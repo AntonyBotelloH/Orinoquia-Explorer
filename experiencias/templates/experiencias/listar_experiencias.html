@@ -46,13 +46,15 @@
                                         <i class="bi bi-eye"></i>
                                     </button>
                                     {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
-                                    <!-- Aún no hay URL de editar/eliminar para experiencia, se dejan desactivados -->
-                                    <button type="button" class="btn btn-sm btn-outline-primary disabled" title="Editar (Próximamente)">
+                                    <a href="{% url 'experiencia_editar' experiencia.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
                                         <i class="bi bi-pencil-square"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger disabled" title="Eliminar (Próximamente)">
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ experiencia.id }}">
                                         <i class="bi bi-trash"></i>
                                     </button>
+                                    
+                                    {% url 'experiencia_eliminar' experiencia.id as url_dinamica %}
+                                    {% include 'partials/modal-delete.html' with id_objeto=experiencia.id titulo_modal=titulo nombre_objeto="la experiencia "|add:experiencia.nombre url_post=url_dinamica %}
                                     {% endif %}
                                 </div>
                             </td>

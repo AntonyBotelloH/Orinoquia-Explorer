@@ -2,7 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Categoria, Experiencia, Resena
 from .forms import CategoriaForm, ExperienciaForm
 from django.contrib import messages
+from usuarios.decorators import rol_requerido
+
 # Create your views here.
+@rol_requerido('ADMIN', 'GUIA')
 def listar_categoria(request):
     categorias = Categoria.objects.all()
     titulo = 'Categorías'
@@ -12,6 +15,7 @@ def listar_categoria(request):
     }
     return render(request, 'categorias/listar_categorias.html', context)
 
+@rol_requerido('ADMIN')
 def crear_categoria(request):
     accion = 'Crear'
     titulo = 'Categoría'
@@ -33,6 +37,7 @@ def crear_categoria(request):
     }   
     return render(request, 'partials/base-creacion.html', context)
 
+@rol_requerido('ADMIN')
 def editar_categoria(request, id):
     categoria = get_object_or_404(Categoria, id=id)
     accion = 'Editar'
@@ -56,6 +61,7 @@ def editar_categoria(request, id):
     }   
     return render(request, 'partials/base-creacion.html', context)
 
+@rol_requerido('ADMIN')
 def eliminar_categoria(request, id):
     objeto = get_object_or_404(Categoria, id=id)
     
@@ -67,11 +73,13 @@ def eliminar_categoria(request, id):
     return redirect('categoria_listar')
 
 
+@rol_requerido('ADMIN', 'GUIA')
 def listar_experiencia(request):
     experiencias = Experiencia.objects.all()
     context = {'experiencias': experiencias}
     return render(request, 'experiencias/listar_experiencias.html', context)
 
+@rol_requerido('ADMIN')
 def crear_experiencia(request):
     accion = 'Crear'
     titulo = 'Experiencia'
@@ -93,6 +101,101 @@ def crear_experiencia(request):
     }   
     return render(request, 'partials/base-creacion.html', context)
 
+@rol_requerido('ADMIN')
+def editar_experiencia(request, id):
+    experiencia = get_object_or_404(Experiencia, id=id)
+    accion = 'Editar'
+    titulo = 'Experiencia'
+    form = ExperienciaForm(instance=experiencia)
+    if request.method == 'POST':
+        form = ExperienciaForm(request.POST, request.FILES, instance=experiencia)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Experiencia actualizada correctamente.')
+            return redirect('experiencia_listar')
+        else:
+            for campo, errores in form.errors.items():
+                for error in errores:
+                    messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
 
+    context = {
+        'titulo': titulo,
+        'form': form,
+        'accion': accion,
+    }   
+    return render(request, 'partials/base-creacion.html', context)
+
+@rol_requerido('ADMIN')
+def eliminar_experiencia(request, id):
+    objeto = get_object_or_404(Experiencia, id=id)
+    
+    if request.method == 'POST':
+        objeto.estado = False
+        objeto.save()
+        messages.success(request, 'Experiencia eliminada correctamente.')
+        
+    return redirect('experiencia_listar')
+
+@rol_requerido('ADMIN', 'GUIA')
 def listar_resena(request):
-    return render(request, 'experiencias/listar_resena.html')
+    resenas = Resena.objects.all().order_by('-fecha_creacion')
+    titulo = 'Reseñas'
+    context = {
+        'resenas': resenas,
+        'titulo': titulo
+    }
+    return render(request, 'experiencias/listar_resena.html', context)
+
+@rol_requerido('ADMIN')
+def crear_resena(request):
+    accion = 'Crear'
+    titulo = 'Reseña'
+    form = ResenaForm()
+    if request.method == 'POST':
+        form = ResenaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Reseña creada correctamente.')
+            return redirect('resena_listar')
+        else:
+            for campo, errores in form.errors.items():
+                for error in errores:
+                    messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
+    context = {
+        'titulo': titulo,
+        'form': form,
+        'accion': accion,
+    }
+    return render(request, 'partials/base-creacion.html', context)
+
+@rol_requerido('ADMIN')
+def editar_resena(request, id):
+    resena = get_object_or_404(Resena, id=id)
+    accion = 'Editar'
+    titulo = 'Reseña'
+    form = ResenaForm(instance=resena)
+    if request.method == 'POST':
+        form = ResenaForm(request.POST, instance=resena)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Reseña actualizada correctamente.')
+            return redirect('resena_listar')
+        else:
+            for campo, errores in form.errors.items():
+                for error in errores:
+                    messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
+
+    context = {
+        'titulo': titulo,
+        'form': form,
+        'accion': accion,
+    }
+    return render(request, 'partials/base-creacion.html', context)
+
+@rol_requerido('ADMIN')
+def eliminar_resena(request, id):
+    objeto = get_object_or_404(Resena, id=id)
+    if request.method == 'POST':
+        objeto.delete()
+        messages.success(request, 'Reseña eliminada correctamente.')
+    return redirect('resena_listar')
