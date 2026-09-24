@@ -1,0 +1,65 @@
+{% extends 'partials/base-admin.html' %}
+{% load static %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold" style="color: var(--brand-primary);">{{ titulo|default:"Gestión de Pólizas" }}</h2>
+        {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
+        <a href="{% url 'poliza_crear' %}" class="btn btn-primary fw-bold">
+            <i class="bi bi-shield-plus me-2"></i> Crear Póliza
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="tablaPolizas" class="table table-hover align-middle mb-0 w-100 nowrap">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-4">Proveedor</th>
+                            <th>Número de Póliza</th>
+                            <th>Fecha de Expiración</th>
+                            <th class="text-center pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for poliza in polizas %}
+                        <tr>
+                            <td class="ps-4 fw-bold" style="color: var(--brand-secondary);">{{ poliza.proveedor }}</td>
+                            <td><span class="badge bg-light text-dark border"><i class="bi bi-hash me-1"></i>{{ poliza.numero_poliza }}</span></td>
+                            <td><i class="bi bi-calendar-event me-1"></i> {{ poliza.fecha_expiracion|date:"d M Y" }}</td>
+                            <td class="text-center pe-4">
+                                <div class="d-flex justify-content-center gap-1">
+                                    <button class="btn btn-sm btn-outline-info" title="Visualizar">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
+                                    <a href="{% url 'poliza_editar' poliza.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ poliza.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    
+                                    {% url 'poliza_eliminar' poliza.id as url_dinamica %}
+                                    {% include 'partials/modal-delete.html' with id_objeto=poliza.id titulo_modal=titulo nombre_objeto="la póliza "|add:poliza.numero_poliza url_post=url_dinamica %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-5">
+                                <i class="bi bi-shield-x fs-1 d-block mb-3 text-light"></i>
+                                No hay pólizas registradas.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+{% block script %}
+{% endblock script %}
