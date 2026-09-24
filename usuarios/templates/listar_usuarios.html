@@ -1,0 +1,60 @@
+{% extends "partials/base-admin.html" %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h4 class="m-0 font-weight-bold text-primary">{{ titulo }}</h4>
+        {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
+        <a href="#" class="btn btn-success btn-sm">Nuevo Usuario</a>
+        {% endif %}
+    </div>
+    
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Documento</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Rol</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td>{{ usuario.tipo_documento }} {{ usuario.documento }}</td>
+                        <td>{{ usuario.first_name }}</td>
+                        <td>{{ usuario.last_name }}</td>
+                        <td>
+                            {% if usuario.rol == 'ADMIN' %}
+                                <span class="badge bg-danger">{{ usuario.get_rol_display }}</span>
+                            {% elif usuario.rol == 'GUIA' %}
+                                <span class="badge bg-primary">{{ usuario.get_rol_display }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ usuario.get_rol_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <!-- Todos los que acceden a esta vista (ADMIN, GUIA) pueden visualizar -->
+                            <a href="#" class="btn btn-info btn-sm text-white">Visualizar</a>
+                            
+                            <!-- Solo el ADMIN puede editar y eliminar -->
+                            {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
+                            <a href="#" class="btn btn-warning btn-sm text-dark">Editar</a>
+                            <a href="#" class="btn btn-danger btn-sm">Eliminar</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No hay usuarios registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
