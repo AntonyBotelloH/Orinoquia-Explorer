@@ -35,6 +35,9 @@
             <!-- Auth buttons -->
             <div class="d-flex ms-3 gap-2">
                 {% if user.is_authenticated %}
+                    {% if user.rol == 'ADMIN' %}
+                        <a href="{% url 'categoria_listar' %}" class="btn btn-outline-success fw-bold"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                    {% endif %}
                     <a href="#" class="btn btn-outline-warning"><i class="bi bi-person-circle"></i> Mi Perfil</a>
                     
                     <!-- Botón de Cerrar Sesión seguro (POST) -->
