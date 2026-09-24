@@ -1,0 +1,82 @@
+{% extends 'partials/base-admin.html' %}
+{% load static %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold" style="color: var(--brand-primary);">{{ titulo|default:"Gestión de Reseñas" }}</h2>
+        {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
+        <a href="{% url 'resena_crear' %}" class="btn btn-primary fw-bold">
+            <i class="bi bi-star-fill me-2"></i> Crear Reseña
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="tablaResenas" class="table table-hover align-middle mb-0 w-100 nowrap">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-4">Usuario</th>
+                            <th>Experiencia</th>
+                            <th>Calificación</th>
+                            <th>Comentario</th>
+                            <th>Fecha</th>
+                            <th class="text-center pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for resena in resenas %}
+                        <tr>
+                            <td class="ps-4 fw-bold" style="color: var(--brand-secondary);">{{ resena.usuario.first_name }} {{ resena.usuario.last_name }}</td>
+                            <td>{{ resena.experiencia.nombre }}</td>
+                            <td>
+                                <span class="d-flex align-items-center">
+                                    {% with ''|center:5 as range %}
+                                        {% for _ in range %}
+                                            {% if forloop.counter <= resena.calificacion %}
+                                                <i class="bi bi-star-fill text-warning"></i>
+                                            {% else %}
+                                                <i class="bi bi-star text-muted"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                    <span class="ms-2 fw-bold">{{ resena.calificacion }}/5</span>
+                                </span>
+                            </td>
+                            <td>{{ resena.comentario|truncatechars:40 }}</td>
+                            <td>{{ resena.fecha_creacion|date:"d M Y" }}</td>
+                            <td class="text-center pe-4">
+                                <div class="d-flex justify-content-center gap-1">
+                                    <button class="btn btn-sm btn-outline-info" title="Visualizar">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
+                                    <a href="{% url 'resena_editar' resena.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ resena.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    
+                                    {% url 'resena_eliminar' resena.id as url_dinamica %}
+                                    {% include 'partials/modal-delete.html' with id_objeto=resena.id titulo_modal=titulo nombre_objeto="la reseña de "|add:resena.usuario.first_name url_post=url_dinamica %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-5">
+                                <i class="bi bi-chat-square-text fs-1 d-block mb-3 text-light"></i>
+                                No hay reseñas registradas.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+{% block script %}
+{% endblock script %}
