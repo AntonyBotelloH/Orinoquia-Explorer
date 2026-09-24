@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap');
+
 :root {
     --brand-primary: #024944; /* Verde Selva / Cerceta Oscuro */
     --brand-secondary: #FF8C00; /* Naranja Atardecer */
@@ -42,6 +44,7 @@ body {
     font-size: 1.4rem;
     letter-spacing: 1px;
     text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
 }
 
 #sidebar ul.components {
@@ -91,8 +94,9 @@ body {
 }
 
 .top-navbar .navbar-brand {
-    font-weight: 700;
+    font-weight: 800;
     color: var(--brand-primary);
+    font-family: 'Montserrat', sans-serif;
 }
 
 /* --- Main Body Content --- */

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap');
+
 /* ==========================================
    ORINOQUIA EXPLORER - ESTILOS PRINCIPALES
    ========================================== */
@@ -19,6 +21,11 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
 }
 
 main {
@@ -53,7 +60,7 @@ main {
    ========================================== */
 .hero-section {
     background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)), 
-                url('../images/orinoquia-hero.jpg') no-repeat center center;
+                url('../images/banner.jpeg') no-repeat center center;
     background-size: cover;
     padding: 100px 0;
     border-bottom: 5px solid var(--accent-color);

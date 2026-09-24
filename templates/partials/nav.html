@@ -1,8 +1,10 @@
+{% load static %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <!-- Logo / Marca -->
-        <a class="navbar-brand fw-bold text-warning" href="{% url 'index_usuario' %}">
-            🧭 Orinoquia Explorer
+        <a class="navbar-brand fw-bold text-warning d-flex align-items-center" href="{% url 'index_usuario' %}">
+            <img src="{% static 'images/logo2.jpeg' %}" alt="Logo Orinoquia Explorer" width="40" height="40" class="me-2 rounded-circle">
+            Orinoquia Explorer
         </a>
         
         <!-- Botón responsive para móviles -->
@@ -29,6 +31,24 @@
                     <a class="nav-link" href="#">Contacto</a>
                 </li>
             </ul>
+            
+            <!-- Auth buttons -->
+            <div class="d-flex ms-3 gap-2">
+                {% if user.is_authenticated %}
+                    <a href="#" class="btn btn-outline-warning"><i class="bi bi-person-circle"></i> Mi Perfil</a>
+                    
+                    <!-- Botón de Cerrar Sesión seguro (POST) -->
+                    <form id="user-logout-form" action="{% url 'logout' %}" method="POST" style="display: none;">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{% url 'index_usuario' %}">
+                    </form>
+                    <a href="#" class="btn btn-warning" onclick="document.getElementById('user-logout-form').submit(); return false;">Salir</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-outline-warning">Ingresar</a>
+                    <!-- Dejé # para el registro hasta que tengas la vista de registro -->
+                    <a href="#" class="btn btn-warning">Registro</a>
+                {% endif %}
+            </div>
         </div>
     </div>
 </nav>
