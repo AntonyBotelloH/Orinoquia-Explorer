@@ -35,6 +35,7 @@ def crear_categoria(request):
         'form': form,
         'accion': accion,
     }   
+    
     return render(request, 'partials/base-creacion.html', context)
 
 @rol_requerido('ADMIN')
