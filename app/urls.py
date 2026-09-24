@@ -31,4 +31,6 @@ urlpatterns = [
     path('recuperar-password/',auth_views.PasswordResetView.as_view(template_name='registration/recuperar.html'),name='recuperar-password'),
     path('recuperar-password/done/', auth_views.PasswordResetDoneView.as_view(template_name='registration/recuperar_completo.html'), name='password_reset_done'),
     ]
+    path('experiencias/', include('experiencias.urls')),
+]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

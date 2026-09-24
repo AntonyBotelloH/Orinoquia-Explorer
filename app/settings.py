@@ -39,8 +39,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'usuarios',
     'experiencias',
-    'turismo'   
+    'turismo',
+    'reservas',
+    'aliados', 
+    'crispy_forms', # pip install django-crispy-forms
+    'crispy_bootstrap5', # pip install crispy-bootstrap5
 ]
+# Configurar crispy forms
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
+
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
 MIDDLEWARE = [
