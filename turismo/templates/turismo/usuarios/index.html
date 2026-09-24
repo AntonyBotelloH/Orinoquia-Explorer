@@ -1,78 +1,38 @@
 {% extends 'partials/base-user.html' %}
 
+{% block header %}
+    {% include 'partials/header.html' %}
+{% endblock header %}
+
 {% block content %}
-<div class="container-fluid py-4">
-    <!-- Encabezado del Dashboard -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-orinoquia-secondary mb-0">Dashboard Administrativo</h2>
-        <a href="#" class="btn btn-primary btn-sm"><i class="fas fa-download me-2"></i>Generar Reporte</a>
-    </div>
-    
-    <!-- Tarjetas de Resumen (KPIs) -->
+<div class="container-fluid py-2">
+    <h2 class="fw-bold text-orinoquia-primary mb-4">Descubre lo Mejor de la Orinoquia</h2>
+    <p class="text-muted mb-5" style="font-size: 1.1rem;">
+        Bienvenido a <strong>Orinoquia Explorer</strong>, tu portal oficial para encontrar las mejores experiencias, 
+        destinos mágicos y vivir de cerca la cultura llanera. Sumérgete en una aventura diferente.
+    </p>
+
+    <!-- Sección de Destinos Destacados -->
+    <h3 class="fw-bold mb-4 text-orinoquia-secondary">Destinos Destacados</h3>
     <div class="row g-4 mb-5">
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-primary text-white h-100">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <h6 class="card-title"><i class="fas fa-users me-2"></i>Usuarios Registrados</h6>
-                    <h3 class="fw-bold mb-0">1,245</h3>
+                    <h5 class="card-title text-orinoquia-primary fw-bold"><i class="bi bi-geo-alt-fill me-2 text-warning"></i>Caño Cristales</h5>
+                    <p class="card-text mt-3">El río de los cinco colores, una maravilla natural inolvidable oculta en la serranía de la Macarena.</p>
+                    <a href="#" class="btn btn-outline-warning btn-sm fw-bold mt-2">Ver destino</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-success text-white h-100">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <h6 class="card-title"><i class="fas fa-map-marked-alt me-2"></i>Destinos Activos</h6>
-                    <h3 class="fw-bold mb-0">24</h3>
+                    <h5 class="card-title text-orinoquia-primary fw-bold"><i class="bi bi-geo-alt-fill me-2 text-warning"></i>Safari Llanero</h5>
+                    <p class="card-text mt-3">Recorre las inmensas sabanas, visita hatos tradicionales y deslúmbrate con atardeceres mágicos.</p>
+                    <a href="#" class="btn btn-outline-warning btn-sm fw-bold mt-2">Ver destino</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 text-white h-100" class="bg-warning"> <!-- Usando clase de bootstrap en vez de style -->
-                <div class="card-body bg-warning text-dark rounded">
-                    <h6 class="card-title"><i class="fas fa-calendar-check me-2"></i>Reservas (Mes)</h6>
-                    <h3 class="fw-bold mb-0">156</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-danger text-white h-100">
-                <div class="card-body">
-                    <h6 class="card-title"><i class="fas fa-comments me-2"></i>Nuevos Mensajes</h6>
-                    <h3 class="fw-bold mb-0">8</h3>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Sección de Gestión Rápida -->
-    <h3 class="fw-bold mb-3 text-orinoquia-primary">Gestión Rápida</h3>
-    <div class="list-group shadow-sm">
-        
-        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 border-0 border-bottom">
-            <div>
-                <i class="fas fa-plus-circle me-3 text-success fa-lg"></i> 
-                <strong>Añadir Nuevo Destino</strong>
-            </div>
-            <i class="fas fa-chevron-right text-muted"></i>
-        </a>
-        
-        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 border-0 border-bottom">
-            <div>
-                <i class="fas fa-images me-3 text-info fa-lg"></i> 
-                <strong>Actualizar Galería de Imágenes</strong>
-            </div>
-            <i class="fas fa-chevron-right text-muted"></i>
-        </a>
-        
-        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 border-0">
-            <div>
-                <i class="fas fa-users-cog me-3 text-warning fa-lg"></i> 
-                <strong>Gestionar Permisos de Usuarios</strong>
-            </div>
-            <i class="fas fa-chevron-right text-muted"></i>
-        </a>
-        
     </div>
 </div>
-
 {% endblock content %}
