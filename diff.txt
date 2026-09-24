@@ -1,0 +1,12 @@
+﻿diff --git a/experiencias/views.py b/experiencias/views.py
+index 232c42e..f365b34 100644
+--- a/experiencias/views.py
++++ b/experiencias/views.py
+@@ -3,6 +3,7 @@ from .models import Categoria, Experiencia, Resena
+ from .forms import CategoriaForm, ExperienciaForm
+ from django.contrib import messages
+ # Create your views here.
++
+ def listar_categoria(request):
+     categorias = Categoria.objects.all()
+     titulo = 'Categor├¡as'

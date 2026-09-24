@@ -2,7 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Categoria, Experiencia, Resena
 from .forms import CategoriaForm, ExperienciaForm
 from django.contrib import messages
+from usuarios.decorators import rol_requerido
 # Create your views here.
+
+@rol_requerido('ADMIN', 'GUIA')
 def listar_categoria(request):
     categorias = Categoria.objects.all()
     titulo = 'Categorías'
@@ -12,6 +15,7 @@ def listar_categoria(request):
     }
     return render(request, 'categorias/listar_categorias.html', context)
 
+@rol_requerido('ADMIN')
 def crear_categoria(request):
     accion = 'Crear'
     titulo = 'Categoría'
@@ -33,6 +37,7 @@ def crear_categoria(request):
     }   
     return render(request, 'partials/base-creacion.html', context)
 
+@rol_requerido('ADMIN')
 def editar_categoria(request, id):
     categoria = get_object_or_404(Categoria, id=id)
     accion = 'Editar'
@@ -56,6 +61,7 @@ def editar_categoria(request, id):
     }   
     return render(request, 'partials/base-creacion.html', context)
 
+@rol_requerido('ADMIN')
 def eliminar_categoria(request, id):
     objeto = get_object_or_404(Categoria, id=id)
     
@@ -67,11 +73,13 @@ def eliminar_categoria(request, id):
     return redirect('categoria_listar')
 
 
+@rol_requerido('ADMIN', 'GUIA')
 def listar_experiencia(request):
     experiencias = Experiencia.objects.all()
     context = {'experiencias': experiencias}
     return render(request, 'experiencias/listar_experiencias.html', context)
 
+@rol_requerido('ADMIN')
 def crear_experiencia(request):
     accion = 'Crear'
     titulo = 'Experiencia'
@@ -94,5 +102,6 @@ def crear_experiencia(request):
     return render(request, 'partials/base-creacion.html', context)
 
 
+@rol_requerido('ADMIN', 'GUIA')
 def listar_resena(request):
     return render(request, 'experiencias/listar_resena.html')

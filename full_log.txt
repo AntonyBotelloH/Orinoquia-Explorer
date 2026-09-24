@@ -1,0 +1,3776 @@
+﻿commit d0562b487e8b033eb72bc558b8e579d440291d9c
+Author: AntonyBotelloH <antonybotello@gmail.com>
+Date:   Wed Sep 23 21:15:26 2026 -0500
+
+    feat: add base admin template with sidebar and navigation
+
+diff --git a/templates/partials/base-admin.html b/templates/partials/base-admin.html
+index ef609bb..ad7c517 100644
+--- a/templates/partials/base-admin.html
++++ b/templates/partials/base-admin.html
+@@ -23,14 +23,44 @@
+                 <li>
+                     <a href="#"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                 </li>
++                
++                <!-- M├│dulo Usuarios -->
+                 <li>
+-                    <a href="{% url 'categoria_listar' %}"><i class="bi bi-tags"></i> Categor├¡as</a>
++                    <a href="#usuariosSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle d-flex justify-content-between align-items-center">
++                        <span><i class="bi bi-people"></i> Usuarios</span>
++                    </a>
++                    <ul class="collapse list-unstyled" id="usuariosSubmenu">
++                        <li>
++                            <a href="{% url 'listar_usuarios' %}" class="ms-3"><i class="bi bi-list-ul"></i> Listar Usuarios</a>
++                        </li>
++                    </ul>
+                 </li>
++
++                <!-- M├│dulo Cat├ílogo -->
+                 <li>
+-                    <a href="{% url 'experiencia_listar' %}"><i class="bi bi-compass"></i> Experiencias</a>
++                    <a href="#catalogoSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle d-flex justify-content-between align-items-center">
++                        <span><i class="bi bi-map"></i> Cat├ílogo (Turismo)</span>
++                    </a>
++                    <ul class="collapse list-unstyled" id="catalogoSubmenu">
++                        <li>
++                            <a href="{% url 'categoria_listar' %}" class="ms-3"><i class="bi bi-tags"></i> Categor├¡as</a>
++                        </li>
++                        <li>
++                            <a href="{% url 'experiencia_listar' %}" class="ms-3"><i class="bi bi-compass"></i> Experiencias</a>
++                        </li>
++                    </ul>
+                 </li>
++
++                <!-- M├│dulo Interacci├│n -->
+                 <li>
+-                    <a href="#"><i class="bi bi-chat-left-text"></i> Rese├▒as</a>
++                    <a href="#interaccionSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle d-flex justify-content-between align-items-center">
++                        <span><i class="bi bi-chat-left-text"></i> Interacci├│n</span>
++                    </a>
++                    <ul class="collapse list-unstyled" id="interaccionSubmenu">
++                        <li>
++                            <a href="{% url 'resena_listar' %}" class="ms-3"><i class="bi bi-star"></i> Rese├▒as</a>
++                        </li>
++                    </ul>
+                 </li>
+             </ul>
+         </nav>
+
+commit 30f5f0565910999dae98886edf70d80538b74908
+Author: AntonyBotelloH <antonybotello@gmail.com>
+Date:   Wed Sep 23 21:11:08 2026 -0500
+
+    feat: add base user layout, navigation partial, and user index template
+
+diff --git a/templates/partials/base-user.html b/templates/partials/base-user.html
+index c234cc6..87cf2ac 100644
+--- a/templates/partials/base-user.html
++++ b/templates/partials/base-user.html
+@@ -16,7 +16,8 @@
+ 
+     {% include 'partials/nav.html' %}
+ 
+-    {% include 'partials/header.html' %}
++    {% block header %}
++    {% endblock header %}
+     
+     <main class="container my-5">
+         <div class="row">
+diff --git a/templates/partials/nav.html b/templates/partials/nav.html
+index 7f84f05..27c4e71 100644
+--- a/templates/partials/nav.html
++++ b/templates/partials/nav.html
+@@ -35,6 +35,9 @@
+             <!-- Auth buttons -->
+             <div class="d-flex ms-3 gap-2">
+                 {% if user.is_authenticated %}
++                    {% if user.rol == 'ADMIN' %}
++                        <a href="{% url 'categoria_listar' %}" class="btn btn-outline-success fw-bold"><i class="bi bi-speedometer2"></i> Dashboard</a>
++                    {% endif %}
+                     <a href="#" class="btn btn-outline-warning"><i class="bi bi-person-circle"></i> Mi Perfil</a>
+                     
+                     <!-- Bot├│n de Cerrar Sesi├│n seguro (POST) -->
+diff --git a/turismo/templates/turismo/usuarios/index.html b/turismo/templates/turismo/usuarios/index.html
+index 8c5865a..1124f3a 100644
+--- a/turismo/templates/turismo/usuarios/index.html
++++ b/turismo/templates/turismo/usuarios/index.html
+@@ -1,5 +1,9 @@
+ {% extends 'partials/base-user.html' %}
+ 
++{% block header %}
++    {% include 'partials/header.html' %}
++{% endblock header %}
++
+ {% block content %}
+ <div class="container-fluid py-2">
+     <h2 class="fw-bold text-orinoquia-primary mb-4">Descubre lo Mejor de la Orinoquia</h2>
+
+commit 3fba15583e470e7bf5841e799ab850a182538168
+Author: AntonyBotelloH <antonybotello@gmail.com>
+Date:   Wed Sep 23 20:43:47 2026 -0500
+
+    feat: add base layout templates, navigation partial, static assets, and database migration
+
+diff --git a/app/urls.py b/app/urls.py
+index 6fcf81e..eda52df 100644
+--- a/app/urls.py
++++ b/app/urls.py
+@@ -22,6 +22,7 @@ from django.contrib.auth import views as auth_views
+ 
+ urlpatterns = [
+     path('admin/', admin.site.urls),
++    path('auth/', include('django.contrib.auth.urls')),
+     path('', include('turismo.urls')),
+ 
+     #Rutas para el login
+@@ -30,7 +31,6 @@ urlpatterns = [
+     #Rutas para contrase├▒a
+     path('recuperar-password/',auth_views.PasswordResetView.as_view(template_name='registration/recuperar.html'),name='recuperar-password'),
+     path('recuperar-password/done/', auth_views.PasswordResetDoneView.as_view(template_name='registration/recuperar_completo.html'), name='password_reset_done'),
+-    ]
+     path('experiencias/', include('experiencias.urls')),
+ ]
+ urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+diff --git a/experiencias/migrations/0004_alter_experiencia_categoria_and_more.py b/experiencias/migrations/0004_alter_experiencia_categoria_and_more.py
+new file mode 100644
+index 0000000..d8e99f6
+--- /dev/null
++++ b/experiencias/migrations/0004_alter_experiencia_categoria_and_more.py
+@@ -0,0 +1,24 @@
++# Generated by Django 6.1.1 on 2026-09-24 01:24
++
++import django.db.models.deletion
++from django.db import migrations, models
++
++
++class Migration(migrations.Migration):
++
++    dependencies = [
++        ('experiencias', '0003_categoria_estado_experiencia_estado_resena'),
++    ]
++
++    operations = [
++        migrations.AlterField(
++            model_name='experiencia',
++            name='categoria',
++            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='experiencias.categoria', verbose_name='Categor├¡a'),
++        ),
++        migrations.AlterField(
++            model_name='experiencia',
++            name='duracion',
++            field=models.IntegerField(verbose_name='Duraci├│n'),
++        ),
++    ]
+diff --git a/static/css/admin-style.css b/static/css/admin-style.css
+index c9e41cc..3d57253 100644
+--- a/static/css/admin-style.css
++++ b/static/css/admin-style.css
+@@ -1,3 +1,5 @@
++@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap');
++
+ :root {
+     --brand-primary: #024944; /* Verde Selva / Cerceta Oscuro */
+     --brand-secondary: #FF8C00; /* Naranja Atardecer */
+@@ -42,6 +44,7 @@ body {
+     font-size: 1.4rem;
+     letter-spacing: 1px;
+     text-transform: uppercase;
++    font-family: 'Montserrat', sans-serif;
+ }
+ 
+ #sidebar ul.components {
+@@ -91,8 +94,9 @@ body {
+ }
+ 
+ .top-navbar .navbar-brand {
+-    font-weight: 700;
++    font-weight: 800;
+     color: var(--brand-primary);
++    font-family: 'Montserrat', sans-serif;
+ }
+ 
+ /* --- Main Body Content --- */
+diff --git a/static/css/style.css b/static/css/style.css
+index 1ba2c19..07b02aa 100644
+--- a/static/css/style.css
++++ b/static/css/style.css
+@@ -1,3 +1,5 @@
++@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap');
++
+ /* ==========================================
+    ORINOQUIA EXPLORER - ESTILOS PRINCIPALES
+    ========================================== */
+@@ -21,6 +23,11 @@ body {
+     min-height: 100vh;
+ }
+ 
++h1, h2, h3, h4, h5, h6, .navbar-brand {
++    font-family: 'Montserrat', sans-serif;
++    font-weight: 800;
++}
++
+ main {
+     flex: 1;
+ }
+@@ -53,7 +60,7 @@ main {
+    ========================================== */
+ .hero-section {
+     background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)), 
+-                url('../images/orinoquia-hero.jpg') no-repeat center center;
++                url('../images/banner.jpeg') no-repeat center center;
+     background-size: cover;
+     padding: 100px 0;
+     border-bottom: 5px solid var(--accent-color);
+diff --git a/static/images/banner.jpeg b/static/images/banner.jpeg
+new file mode 100644
+index 0000000..d887cca
+Binary files /dev/null and b/static/images/banner.jpeg differ
+diff --git a/static/images/logo1.jpeg b/static/images/logo1.jpeg
+new file mode 100644
+index 0000000..bdaf37f
+Binary files /dev/null and b/static/images/logo1.jpeg differ
+diff --git a/static/images/logo2.jpeg b/static/images/logo2.jpeg
+new file mode 100644
+index 0000000..56d4a66
+Binary files /dev/null and b/static/images/logo2.jpeg differ
+diff --git a/templates/partials/base-admin.html b/templates/partials/base-admin.html
+index 312aed6..ef609bb 100644
+--- a/templates/partials/base-admin.html
++++ b/templates/partials/base-admin.html
+@@ -41,9 +41,24 @@
+             <nav class="navbar navbar-expand-lg top-navbar">
+                 <div class="container-fluid">
+                     <span class="navbar-brand mb-0 h1">{{ titulo|default:"Panel de Control" }}</span>
+-                    <div class="d-flex align-items-center">
+-                        <span class="me-3 fw-bold" style="color: var(--brand-primary)">Admin</span>
+-                        <i class="bi bi-person-circle fs-3 text-secondary"></i>
++                    <div class="d-flex align-items-center dropdown">
++                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
++                            <span class="me-2 fw-bold" style="color: var(--brand-primary)">Admin</span>
++                            <i class="bi bi-person-circle fs-3 text-secondary"></i>
++                        </a>
++                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser">
++                            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i> Mi Perfil</a></li>
++                            <li><hr class="dropdown-divider"></li>
++                            <li>
++                                <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: none;">
++                                    {% csrf_token %}
++                                    <input type="hidden" name="next" value="{% url 'index_usuario' %}">
++                                </form>
++                                <a class="dropdown-item text-danger" href="#" onclick="document.getElementById('logout-form').submit(); return false;">
++                                    <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesi├│n
++                                </a>
++                            </li>
++                        </ul>
+                     </div>
+                 </div>
+             </nav>
+@@ -78,7 +93,7 @@
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+     
+     <!-- Script para inicializar y mostrar los Toasts autom├íticamente -->
+-    <script src>
++    <script>
+         document.addEventListener('DOMContentLoaded', function () {
+             // Activar enlace activo en el sidebar basado en la URL
+             const currentUrl = window.location.pathname;
+diff --git a/templates/partials/base-user.html b/templates/partials/base-user.html
+index b277784..c234cc6 100644
+--- a/templates/partials/base-user.html
++++ b/templates/partials/base-user.html
+@@ -4,9 +4,13 @@
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+-    <title>Orinoquia Explorer</title>
++    <title>{{titulo|default:"Inicio"}} | Orinoquia Explorer</title>
++    <!-- Bootstrap CSS -->
++    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
++    <!-- Bootstrap Icons -->
++    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
++    <!-- Custom User CSS -->
+     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+ </head>
+ <body>
+ 
+@@ -19,18 +23,50 @@
+             <div class="col-lg-8 mb-4">
+                 {% block content %}
+                 {% endblock content %}
+-                
+             </div>
+-        </div>
+-
+-        <div class="col-lg-4">
+-            {% include 'partials/aside.html' %}
++            <div class="col-lg-4">
++                {% include 'partials/aside.html' %}
++            </div>
+         </div>
+     </main>
++
+     {% include 'partials/footer.html' %}
+ 
++    <!-- Toasts para Messages -->
++    {% if messages %}
++    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
++        {% for message in messages %}
++            <div class="toast align-items-center text-white bg-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}primary{% endif %} border-0" 
++                role="alert" aria-live="assertive" aria-atomic="true">
++                
++                <div class="d-flex">
++                    <div class="toast-body">
++                        <i class="bi bi-info-circle me-2"></i> {{ message }}
++                    </div>
++                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
++                </div>
++            </div>
++        {% endfor %}
++    </div>
++    {% endif %}
++
++    <!-- Bootstrap JS Bundle -->
++    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
++    
++    <!-- Script para inicializar Toasts -->
++    <script>
++        document.addEventListener('DOMContentLoaded', function () {
++            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
++            var toastList = toastElList.map(function (toastEl) {
++                return new bootstrap.Toast(toastEl, { delay: 4000 });
++            });
++            toastList.forEach(function (toast) {
++                toast.show();
++            });
++        });
++    </script>
++
+     {% block scripts %}
+-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>            
+     {% endblock scripts %}
+ </body>
+ </html>
+\ No newline at end of file
+diff --git a/templates/partials/nav.html b/templates/partials/nav.html
+index 7e82a6a..7f84f05 100644
+--- a/templates/partials/nav.html
++++ b/templates/partials/nav.html
+@@ -1,8 +1,10 @@
++{% load static %}
+ <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+     <div class="container">
+         <!-- Logo / Marca -->
+-        <a class="navbar-brand fw-bold text-warning" href="{% url 'index_usuario' %}">
+-            ­ƒº¡ Orinoquia Explorer
++        <a class="navbar-brand fw-bold text-warning d-flex align-items-center" href="{% url 'index_usuario' %}">
++            <img src="{% static 'images/logo2.jpeg' %}" alt="Logo Orinoquia Explorer" width="40" height="40" class="me-2 rounded-circle">
++            Orinoquia Explorer
+         </a>
+         
+         <!-- Bot├│n responsive para m├│viles -->
+@@ -29,6 +31,24 @@
+                     <a class="nav-link" href="#">Contacto</a>
+                 </li>
+             </ul>
++            
++            <!-- Auth buttons -->
++            <div class="d-flex ms-3 gap-2">
++                {% if user.is_authenticated %}
++                    <a href="#" class="btn btn-outline-warning"><i class="bi bi-person-circle"></i> Mi Perfil</a>
++                    
++                    <!-- Bot├│n de Cerrar Sesi├│n seguro (POST) -->
++                    <form id="user-logout-form" action="{% url 'logout' %}" method="POST" style="display: none;">
++                        {% csrf_token %}
++                        <input type="hidden" name="next" value="{% url 'index_usuario' %}">
++                    </form>
++                    <a href="#" class="btn btn-warning" onclick="document.getElementById('user-logout-form').submit(); return false;">Salir</a>
++                {% else %}
++                    <a href="{% url 'login' %}" class="btn btn-outline-warning">Ingresar</a>
++                    <!-- Dej├® # para el registro hasta que tengas la vista de registro -->
++                    <a href="#" class="btn btn-warning">Registro</a>
++                {% endif %}
++            </div>
+         </div>
+     </div>
+ </nav>
+\ No newline at end of file
+diff --git a/turismo/templates/turismo/usuarios/index.html b/turismo/templates/turismo/usuarios/index.html
+index 7f8c2d3..8c5865a 100644
+--- a/turismo/templates/turismo/usuarios/index.html
++++ b/turismo/templates/turismo/usuarios/index.html
+@@ -1,78 +1,34 @@
+ {% extends 'partials/base-user.html' %}
+ 
+ {% block content %}
+-<div class="container-fluid py-4">
+-    <!-- Encabezado del Dashboard -->
+-    <div class="d-flex justify-content-between align-items-center mb-4">
+-        <h2 class="fw-bold text-orinoquia-secondary mb-0">Dashboard Administrativo</h2>
+-        <a href="#" class="btn btn-primary btn-sm"><i class="fas fa-download me-2"></i>Generar Reporte</a>
+-    </div>
+-    
+-    <!-- Tarjetas de Resumen (KPIs) -->
++<div class="container-fluid py-2">
++    <h2 class="fw-bold text-orinoquia-primary mb-4">Descubre lo Mejor de la Orinoquia</h2>
++    <p class="text-muted mb-5" style="font-size: 1.1rem;">
++        Bienvenido a <strong>Orinoquia Explorer</strong>, tu portal oficial para encontrar las mejores experiencias, 
++        destinos m├ígicos y vivir de cerca la cultura llanera. Sum├®rgete en una aventura diferente.
++    </p>
++
++    <!-- Secci├│n de Destinos Destacados -->
++    <h3 class="fw-bold mb-4 text-orinoquia-secondary">Destinos Destacados</h3>
+     <div class="row g-4 mb-5">
+-        <div class="col-md-3">
+-            <div class="card shadow-sm border-0 bg-primary text-white h-100">
++        <div class="col-md-6">
++            <div class="card shadow-sm border-0 h-100">
+                 <div class="card-body">
+-                    <h6 class="card-title"><i class="fas fa-users me-2"></i>Usuarios Registrados</h6>
+-                    <h3 class="fw-bold mb-0">1,245</h3>
+-                </div>
+-            </div>
+-        </div>
+-        <div class="col-md-3">
+-            <div class="card shadow-sm border-0 bg-success text-white h-100">
+-                <div class="card-body">
+-                    <h6 class="card-title"><i class="fas fa-map-marked-alt me-2"></i>Destinos Activos</h6>
+-                    <h3 class="fw-bold mb-0">24</h3>
+-                </div>
+-            </div>
+-        </div>
+-        <div class="col-md-3">
+-            <div class="card shadow-sm border-0 text-white h-100" class="bg-warning"> <!-- Usando clase de bootstrap en vez de style -->
+-                <div class="card-body bg-warning text-dark rounded">
+-                    <h6 class="card-title"><i class="fas fa-calendar-check me-2"></i>Reservas (Mes)</h6>
+-                    <h3 class="fw-bold mb-0">156</h3>
++                    <h5 class="card-title text-orinoquia-primary fw-bold"><i class="bi bi-geo-alt-fill me-2 text-warning"></i>Ca├▒o Cristales</h5>
++                    <p class="card-text mt-3">El r├¡o de los cinco colores, una maravilla natural inolvidable oculta en la serran├¡a de la Macarena.</p>
++                    <a href="#" class="btn btn-outline-warning btn-sm fw-bold mt-2">Ver destino</a>
+                 </div>
+             </div>
+         </div>
+-        <div class="col-md-3">
+-            <div class="card shadow-sm border-0 bg-danger text-white h-100">
++        <div class="col-md-6">
++            <div class="card shadow-sm border-0 h-100">
+                 <div class="card-body">
+-                    <h6 class="card-title"><i class="fas fa-comments me-2"></i>Nuevos Mensajes</h6>
+-                    <h3 class="fw-bold mb-0">8</h3>
++                    <h5 class="card-title text-orinoquia-primary fw-bold"><i class="bi bi-geo-alt-fill me-2 text-warning"></i>Safari Llanero</h5>
++                    <p class="card-text mt-3">Recorre las inmensas sabanas, visita hatos tradicionales y desl├║mbrate con atardeceres m├ígicos.</p>
++                    <a href="#" class="btn btn-outline-warning btn-sm fw-bold mt-2">Ver destino</a>
+                 </div>
+             </div>
+         </div>
+     </div>
+-    
+-    <!-- Secci├│n de Gesti├│n R├ípida -->
+-    <h3 class="fw-bold mb-3 text-orinoquia-primary">Gesti├│n R├ípida</h3>
+-    <div class="list-group shadow-sm">
+-        
+-        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 border-0 border-bottom">
+-            <div>
+-                <i class="fas fa-plus-circle me-3 text-success fa-lg"></i> 
+-                <strong>A├▒adir Nuevo Destino</strong>
+-            </div>
+-            <i class="fas fa-chevron-right text-muted"></i>
+-        </a>
+-        
+-        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 border-0 border-bottom">
+-            <div>
+-                <i class="fas fa-images me-3 text-info fa-lg"></i> 
+-                <strong>Actualizar Galer├¡a de Im├ígenes</strong>
+-            </div>
+-            <i class="fas fa-chevron-right text-muted"></i>
+-        </a>
+-        
+-        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 border-0">
+-            <div>
+-                <i class="fas fa-users-cog me-3 text-warning fa-lg"></i> 
+-                <strong>Gestionar Permisos de Usuarios</strong>
+-            </div>
+-            <i class="fas fa-chevron-right text-muted"></i>
+-        </a>
+-        
+-    </div>
+ </div>
+-
+ {% endblock content %}
+\ No newline at end of file
+
+commit 82c8ccc7c0f14825392810cdee91f82ab68ad36b
+Merge: eeeeb74 4e05069
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 19:23:11 2026 -0500
+
+    Merge pull request #3 from AntonyBotelloH/login
+    
+    Login
+
+commit 4e05069870aece90336c1149f7789634c782ba29
+Merge: 272be8e eeeeb74
+Author: AntonyBotelloH <antonybotello@gmail.com>
+Date:   Wed Sep 23 19:22:29 2026 -0500
+
+    Merge branch 'main' into login
+
+commit eeeeb74e2cf7f475cbbdbcf690a4f0c7c22e66f4
+Merge: ff1593d af27af9
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 19:20:14 2026 -0500
+
+    Merge pull request #2 from AntonyBotelloH/experiencias
+    
+    Experiencias
+
+commit af27af941ae041e290bb6c204866a53547b9c72a
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 12:40:25 2026 -0500
+
+    feat: add models, views, and admin templates for categories and experiences
+
+diff --git a/experiencias/models.py b/experiencias/models.py
+index 24851df..bebbcfa 100644
+--- a/experiencias/models.py
++++ b/experiencias/models.py
+@@ -15,7 +15,7 @@ class Experiencia(models.Model):
+     nombre = models.CharField(max_length=100, verbose_name="Nombre")
+     descripcion = models.TextField(verbose_name="Descripcion")
+     imagen = models.ImageField(upload_to=renombrar_imagen, verbose_name="Imagen")
+-    precio = models.FloatField(verbose_name="Precio")
++    precio = models.FloatField(verbose_name="Precio",)
+     duracion = models.IntegerField(verbose_name="Duraci├│n")
+     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, verbose_name="Categor├¡a")
+     estado= models.BooleanField(default=True, verbose_name="Estado")
+diff --git a/experiencias/views.py b/experiencias/views.py
+index 11b7a44..232c42e 100644
+--- a/experiencias/views.py
++++ b/experiencias/views.py
+@@ -23,7 +23,9 @@ def crear_categoria(request):
+             messages.success(request, f'Categor├¡a {request.POST.get("nombre")} creada correctamente.')
+             return redirect('categoria_listar')
+         else:
+-            messages.error(request, 'Por favor corrige los errores del formulario.')
++            for campo, errores in form.errors.items():
++                for error in errores:
++                    messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
+     context = {
+         'titulo': titulo,
+         'form': form,
+@@ -43,7 +45,9 @@ def editar_categoria(request, id):
+             messages.success(request, 'Categor├¡a actualizada correctamente.')
+             return redirect('categoria_listar')
+         else:
+-            messages.error(request, 'Por favor corrige los errores del formulario.')
++            for campo, errores in form.errors.items():
++                for error in errores:
++                    messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
+ 
+     context = {
+         'titulo': titulo,
+@@ -79,7 +83,9 @@ def crear_experiencia(request):
+             messages.success(request, 'Experiencia creada correctamente.')
+             return redirect('experiencia_listar')
+         else:
+-            messages.error(request, 'Por favor corrige los errores del formulario.')
++            for campo, errores in form.errors.items():
++                for error in errores:
++                    messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
+     context = {
+         'titulo': titulo,
+         'form': form,
+diff --git a/static/css/admin-style.css b/static/css/admin-style.css
+index eafa794..c9e41cc 100644
+--- a/static/css/admin-style.css
++++ b/static/css/admin-style.css
+@@ -6,6 +6,9 @@
+     --brand-dark: #121212; /* Texto oscuro */
+ }
+ 
++.error-p{
++    background-color: #e07b00;
++}
+ body {
+     background-color: var(--brand-light);
+     color: var(--brand-dark);
+diff --git a/static/js/toast.js b/static/js/toast.js
+new file mode 100644
+index 0000000..e69de29
+diff --git a/templates/partials/base-admin.html b/templates/partials/base-admin.html
+index 8aa6a9b..312aed6 100644
+--- a/templates/partials/base-admin.html
++++ b/templates/partials/base-admin.html
+@@ -78,7 +78,7 @@
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+     
+     <!-- Script para inicializar y mostrar los Toasts autom├íticamente -->
+-    <script>
++    <script src>
+         document.addEventListener('DOMContentLoaded', function () {
+             // Activar enlace activo en el sidebar basado en la URL
+             const currentUrl = window.location.pathname;
+diff --git a/templates/partials/base-creacion.html b/templates/partials/base-creacion.html
+index c06c3f5..57a1451 100644
+--- a/templates/partials/base-creacion.html
++++ b/templates/partials/base-creacion.html
+@@ -6,11 +6,11 @@
+     <div class="container-lg">
+         <div class="row">
+             <div class="col-12">
+-                <h1>{{accion}} {{titulo}}</h1>
+-                <form method="post" enctype="multipart/form-data">
++                <h1 class="mb-4 text-orinoquia-primary">{{accion}} {{titulo}}</h1>
++                <form method="post" enctype="multipart/form-data" novalidate>
+                     {% csrf_token %}
+                     {{ form|crispy }}
+-                    <button type="submit">Guardar</button>
++                    <button type="submit" class="btn btn-primary mt-3 px-4">Guardar</button>
+                 </form>
+             </div>
+         </div>
+
+commit ab75ebc4b9406693ae0e4d833530e4d498c4f3e1
+Merge: 5429422 ff1593d
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 12:16:44 2026 -0500
+
+    Merge branch 'main' into experiencias
+
+commit ff1593d0f54e9566340eb29ccecfb6f5c7b94232
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 12:14:58 2026 -0500
+
+    feat: add base admin layout template and custom stylesheet
+
+diff --git a/static/css/admin-style.css b/static/css/admin-style.css
+new file mode 100644
+index 0000000..eafa794
+--- /dev/null
++++ b/static/css/admin-style.css
+@@ -0,0 +1,131 @@
++:root {
++    --brand-primary: #024944; /* Verde Selva / Cerceta Oscuro */
++    --brand-secondary: #FF8C00; /* Naranja Atardecer */
++    --brand-accent: #FFD100; /* Amarillo Brillante */
++    --brand-light: #F4F6F6; /* Fondo Claro */
++    --brand-dark: #121212; /* Texto oscuro */
++}
++
++body {
++    background-color: var(--brand-light);
++    color: var(--brand-dark);
++    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
++    overflow-x: hidden;
++}
++
++/* --- Sidebar --- */
++#sidebar {
++    min-width: 260px;
++    max-width: 260px;
++    min-height: 100vh;
++    background-color: var(--brand-primary);
++    color: white;
++    transition: all 0.3s;
++    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
++    z-index: 1000;
++}
++
++#sidebar .sidebar-header {
++    padding: 30px 20px;
++    background: rgba(0, 0, 0, 0.15);
++    text-align: center;
++    border-bottom: 2px solid rgba(255,255,255,0.05);
++}
++
++#sidebar .sidebar-header h3 {
++    color: var(--brand-accent);
++    font-weight: 800;
++    margin: 0;
++    font-size: 1.4rem;
++    letter-spacing: 1px;
++    text-transform: uppercase;
++}
++
++#sidebar ul.components {
++    padding: 20px 0;
++}
++
++#sidebar ul li a {
++    padding: 16px 25px;
++    font-size: 1.05em;
++    display: flex;
++    align-items: center;
++    gap: 15px;
++    color: rgba(255,255,255,0.8);
++    text-decoration: none;
++    transition: all 0.2s ease-in-out;
++    border-left: 4px solid transparent;
++}
++
++#sidebar ul li a:hover {
++    color: white;
++    background: rgba(255,255,255,0.05);
++    border-left-color: var(--brand-accent);
++}
++
++#sidebar ul li.active > a {
++    color: white;
++    background: var(--brand-secondary);
++    border-left-color: var(--brand-accent);
++    font-weight: 600;
++}
++
++/* --- Main Content Area --- */
++#content {
++    width: 100%;
++    padding: 0;
++    min-height: 100vh;
++    display: flex;
++    flex-direction: column;
++}
++
++/* --- Top Navbar --- */
++.top-navbar {
++    background: white;
++    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
++    padding: 15px 30px;
++    z-index: 999;
++}
++
++.top-navbar .navbar-brand {
++    font-weight: 700;
++    color: var(--brand-primary);
++}
++
++/* --- Main Body Content --- */
++.main-body {
++    padding: 40px;
++    flex: 1;
++}
++
++/* --- Overrides and Utilities --- */
++.btn-primary {
++    background-color: var(--brand-secondary) !important;
++    border-color: var(--brand-secondary) !important;
++    color: white !important;
++    font-weight: 600;
++}
++
++.btn-primary:hover {
++    background-color: #e07b00 !important;
++    border-color: #e07b00 !important;
++}
++
++.table {
++    background-color: white;
++    border-radius: 8px;
++    overflow: hidden;
++    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
++}
++
++.table thead th {
++    background-color: var(--brand-primary) !important;
++    color: white !important;
++    border-bottom: none;
++    padding: 15px;
++}
++
++.table tbody td {
++    padding: 15px;
++    vertical-align: middle;
++}
+diff --git a/templates/partials/base-admin.html b/templates/partials/base-admin.html
+index e69de29..8aa6a9b 100644
+--- a/templates/partials/base-admin.html
++++ b/templates/partials/base-admin.html
+@@ -0,0 +1,105 @@
++{% load static %}
++<!DOCTYPE html>
++<html lang="es">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>{{titulo}} | Orinoquia Explorer</title>
++    <!-- Bootstrap CSS -->
++    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
++    <!-- Bootstrap Icons -->
++    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
++    <!-- Custom Admin CSS -->
++    <link rel="stylesheet" href="{% static 'css/admin-style.css' %}">
++</head>
++<body>
++    <div class="d-flex">
++        <!-- Sidebar -->
++        <nav id="sidebar">
++            <div class="sidebar-header">
++                <h3>Orinoquia</h3>
++            </div>
++            <ul class="list-unstyled components">
++                <li>
++                    <a href="#"><i class="bi bi-speedometer2"></i> Dashboard</a>
++                </li>
++                <li>
++                    <a href="{% url 'categoria_listar' %}"><i class="bi bi-tags"></i> Categor├¡as</a>
++                </li>
++                <li>
++                    <a href="{% url 'experiencia_listar' %}"><i class="bi bi-compass"></i> Experiencias</a>
++                </li>
++                <li>
++                    <a href="#"><i class="bi bi-chat-left-text"></i> Rese├▒as</a>
++                </li>
++            </ul>
++        </nav>
++
++        <!-- Page Content -->
++        <div id="content">
++            <!-- Top Navbar -->
++            <nav class="navbar navbar-expand-lg top-navbar">
++                <div class="container-fluid">
++                    <span class="navbar-brand mb-0 h1">{{ titulo|default:"Panel de Control" }}</span>
++                    <div class="d-flex align-items-center">
++                        <span class="me-3 fw-bold" style="color: var(--brand-primary)">Admin</span>
++                        <i class="bi bi-person-circle fs-3 text-secondary"></i>
++                    </div>
++                </div>
++            </nav>
++
++            <!-- Main Body Content -->
++            <div class="main-body">
++                {% block content %}
++                {% endblock %}
++            </div>
++        </div>
++    </div>
++
++    <!-- Toasts para Messages -->
++    {% if messages %}
++    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
++        {% for message in messages %}
++            <div class="toast align-items-center text-white bg-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}primary{% endif %} border-0" 
++                role="alert" aria-live="assertive" aria-atomic="true">
++                
++                <div class="d-flex">
++                    <div class="toast-body">
++                        <i class="bi bi-info-circle me-2"></i> {{ message }}
++                    </div>
++                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
++                </div>
++            </div>
++        {% endfor %}
++    </div>
++    {% endif %}
++    
++    <!-- Bootstrap JS Bundle -->
++    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
++    
++    <!-- Script para inicializar y mostrar los Toasts autom├íticamente -->
++    <script>
++        document.addEventListener('DOMContentLoaded', function () {
++            // Activar enlace activo en el sidebar basado en la URL
++            const currentUrl = window.location.pathname;
++            const sidebarLinks = document.querySelectorAll('#sidebar ul li a');
++            sidebarLinks.forEach(link => {
++                if(link.getAttribute('href') !== '#' && currentUrl.includes(link.getAttribute('href'))) {
++                    link.parentElement.classList.add('active');
++                }
++            });
++
++            // Inicializar Toasts
++            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
++            var toastList = toastElList.map(function (toastEl) {
++                return new bootstrap.Toast(toastEl, { delay: 4000 });
++            });
++            toastList.forEach(function (toast) {
++                toast.show();
++            });
++        });
++    </script>
++    
++    {% block script %}{% endblock script %}
++</body>
++</html>
+
+commit 54294223a7156766c69a789d3db0f4910795afcc
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 11:44:57 2026 -0500
+
+    feat: add admin views and templates for category and experience management
+
+diff --git a/experiencias/templates/categorias/listar_categorias.html b/experiencias/templates/categorias/listar_categorias.html
+index 7042698..2605477 100644
+--- a/experiencias/templates/categorias/listar_categorias.html
++++ b/experiencias/templates/categorias/listar_categorias.html
+@@ -17,14 +17,18 @@
+                 <td>{{ categoria.nombre }}</td>
+                 <td>{{ categoria.descripcion }}</td>
+                 <td>{% if categoria.estado %} Activo {% else %} Inactivo {% endif %}</td>
+-                <td>
++                <td>{% if categoria.estado %}
+                     <a href="{% url 'categoria_editar' categoria.id %}" class="btn btn-primary btn-sm">Editar</a>
+                     <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ categoria.id }}">
+                         Eliminar
+                     </button>
+ 
++                    
+                     {% url 'categoria_eliminar' categoria.id as url_dinamica %}
+                     {% include 'partials/modal-delete.html' with id_objeto=categoria.id titulo_modal=titulo nombre_objeto=categoria.nombre url_post=url_dinamica %}
++                   
++                    
++                    {% endif %}
+                 </td>
+             </tr>
+             {% endfor %}
+diff --git a/experiencias/views.py b/experiencias/views.py
+index 99d0171..11b7a44 100644
+--- a/experiencias/views.py
++++ b/experiencias/views.py
+@@ -1,7 +1,7 @@
+ from django.shortcuts import render, redirect, get_object_or_404
+ from .models import Categoria, Experiencia, Resena
+ from .forms import CategoriaForm, ExperienciaForm
+-
++from django.contrib import messages
+ # Create your views here.
+ def listar_categoria(request):
+     categorias = Categoria.objects.all()
+@@ -20,9 +20,10 @@ def crear_categoria(request):
+         form = CategoriaForm(request.POST)
+         if form.is_valid():
+             form.save()
++            messages.success(request, f'Categor├¡a {request.POST.get("nombre")} creada correctamente.')
+             return redirect('categoria_listar')
+         else:
+-            print(form.errors)
++            messages.error(request, 'Por favor corrige los errores del formulario.')
+     context = {
+         'titulo': titulo,
+         'form': form,
+@@ -39,9 +40,11 @@ def editar_categoria(request, id):
+         form = CategoriaForm(request.POST, instance=categoria)
+         if form.is_valid():
+             form.save()
++            messages.success(request, 'Categor├¡a actualizada correctamente.')
+             return redirect('categoria_listar')
+         else:
+-            print(form.errors)
++            messages.error(request, 'Por favor corrige los errores del formulario.')
++
+     context = {
+         'titulo': titulo,
+         'form': form,
+@@ -55,6 +58,7 @@ def eliminar_categoria(request, id):
+     if request.method == 'POST':
+         objeto.estado = False
+         objeto.save()
++        messages.success(request, 'Categor├¡a eliminada correctamente.')
+         
+     return redirect('categoria_listar')
+ 
+@@ -72,7 +76,10 @@ def crear_experiencia(request):
+         form = ExperienciaForm(request.POST, request.FILES)
+         if form.is_valid():
+             form.save()
++            messages.success(request, 'Experiencia creada correctamente.')
+             return redirect('experiencia_listar')
++        else:
++            messages.error(request, 'Por favor corrige los errores del formulario.')
+     context = {
+         'titulo': titulo,
+         'form': form,
+diff --git a/templates/partials/base-admin.html b/templates/partials/base-admin.html
+index 4bb9233..5b26d04 100644
+--- a/templates/partials/base-admin.html
++++ b/templates/partials/base-admin.html
+@@ -4,15 +4,48 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>{{titulo}}</title>
+-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+-
++    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
++  
+ </head>
+ <body>
+     {%block content%}
+     {%endblock%}
+-
+- 
++{% if messages %}
++    <div class="toast-container position-fixed top-0 end-0 p-3">
++        {% for message in messages %}
++            <div class="toast align-items-center border-0 
++                {% if message.tags == 'error' %} text-bg-danger 
++                {% elif message.tags == 'success' %} text-bg-success 
++                {% else %} text-bg-primary {% endif %}" 
++                role="alert" aria-live="assertive" aria-atomic="true">
++                
++                <div class="d-flex">
++                    <div class="toast-body">
++                        {{ message }}
++                    </div>
++                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
++                </div>
++            </div>
++        {% endfor %}
++    </div>
++    {% endif %}
++    
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+-     {% block script %}{% endblock script %}
++    
++    <script>
++        document.addEventListener('DOMContentLoaded', function () {
++            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
++            var toastList = toastElList.map(function (toastEl) {
++                return new bootstrap.Toast(toastEl, { delay: 4000 });
++            });
++            toastList.forEach(function (toast) {
++                toast.show();
++            });
++        });
++    </script>
++    
++    {% block script %}{% endblock script %}
++
++
+ </body>
+ </html>
+\ No newline at end of file
+
+commit a2ccfc66d478eb1727ea45f17efcf5deb602b315
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 10:55:49 2026 -0500
+
+    feat: implement CRUD views, URLs, and templates for categories and experiences
+
+diff --git a/experiencias/templates/categorias/listar_categorias.html b/experiencias/templates/categorias/listar_categorias.html
+index 5f7131c..7042698 100644
+--- a/experiencias/templates/categorias/listar_categorias.html
++++ b/experiencias/templates/categorias/listar_categorias.html
+@@ -1,24 +1,33 @@
+ {% extends 'partials/base-admin.html' %}
+ 
+-
+ {% block content %}
+-    <a href="{% url 'categoria_crear' %}" class="btn btn-primary">Crear Categoria</a>
+-<table>
+-    <thead>
+-        <tr>
+-            <th>Nombre</th>
+-            <th>Descripci├│n</th>
+-            <th>Estado</th>
+-        </tr>
+-    </thead>
+-    <tbody>
+-        {% for categoria in categorias %}
+-        <tr>
+-            <td>{{categoria.nombre}}</td>
+-            <td>{{categoria.descripcion}}</td>
+-            <td>{% if categoria.estado %} Activo {% else %} Inactivo {% endif %}</td>
+-        </tr>
+-        {%endfor%}
+-    </tbody>
+-</table>
++    <a href="{% url 'categoria_crear' %}" class="btn btn-primary mb-3">Crear Categoria</a>
++    <table class="table">
++        <thead>
++            <tr>
++                <th>Nombre</th>
++                <th>Descripci├│n</th>
++                <th>Estado</th>
++                <th>Acciones</th>
++            </tr>
++        </thead>
++        <tbody>
++            {% for categoria in categorias %}
++            <tr>
++                <td>{{ categoria.nombre }}</td>
++                <td>{{ categoria.descripcion }}</td>
++                <td>{% if categoria.estado %} Activo {% else %} Inactivo {% endif %}</td>
++                <td>
++                    <a href="{% url 'categoria_editar' categoria.id %}" class="btn btn-primary btn-sm">Editar</a>
++                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ categoria.id }}">
++                        Eliminar
++                    </button>
++
++                    {% url 'categoria_eliminar' categoria.id as url_dinamica %}
++                    {% include 'partials/modal-delete.html' with id_objeto=categoria.id titulo_modal=titulo nombre_objeto=categoria.nombre url_post=url_dinamica %}
++                </td>
++            </tr>
++            {% endfor %}
++        </tbody>
++    </table>
+ {% endblock content %}
+\ No newline at end of file
+diff --git a/experiencias/urls.py b/experiencias/urls.py
+index 2c4b867..4904aa7 100644
+--- a/experiencias/urls.py
++++ b/experiencias/urls.py
+@@ -1,10 +1,12 @@
+ 
+ from django.contrib import admin
+ from django.urls import path
+-from .views import listar_categoria, crear_categoria, listar_experiencia, crear_experiencia, listar_resena
++from .views import listar_categoria, crear_categoria, listar_experiencia, crear_experiencia, listar_resena, editar_categoria, eliminar_categoria
+ urlpatterns = [
+     path('categoria/', listar_categoria, name='categoria_listar'),
+     path('categoria/crear/', crear_categoria, name='categoria_crear'),
++    path('categoria/editar/<int:id>/', editar_categoria, name='categoria_editar'),
++    path('categoria/eliminar/<int:id>/', eliminar_categoria, name='categoria_eliminar'),
+ 
+     path('experiencia/', listar_experiencia, name='experiencia_listar'),
+     path('experiencia/crear/', crear_experiencia, name='experiencia_crear'),
+diff --git a/experiencias/views.py b/experiencias/views.py
+index 7276547..99d0171 100644
+--- a/experiencias/views.py
++++ b/experiencias/views.py
+@@ -1,14 +1,20 @@
+-from django.shortcuts import render,redirect
++from django.shortcuts import render, redirect, get_object_or_404
+ from .models import Categoria, Experiencia, Resena
+ from .forms import CategoriaForm, ExperienciaForm
++
+ # Create your views here.
+ def listar_categoria(request):
+-    categorias= Categoria.objects.all()
+-    titulo='Categorias'
+-    context={'categorias':categorias}
++    categorias = Categoria.objects.all()
++    titulo = 'Categor├¡as'
++    context = {
++        'categorias': categorias,
++        'titulo': titulo
++    }
+     return render(request, 'categorias/listar_categorias.html', context)
++
+ def crear_categoria(request):
+-    titulo='Categoria'
++    accion = 'Crear'
++    titulo = 'Categor├¡a'
+     form = CategoriaForm()
+     if request.method == 'POST':
+         form = CategoriaForm(request.POST)
+@@ -17,28 +23,63 @@ def crear_categoria(request):
+             return redirect('categoria_listar')
+         else:
+             print(form.errors)
+-    context={
+-        'titulo':titulo,
+-        'form':form
++    context = {
++        'titulo': titulo,
++        'form': form,
++        'accion': accion,
+     }   
+     return render(request, 'partials/base-creacion.html', context)
++
++def editar_categoria(request, id):
++    categoria = get_object_or_404(Categoria, id=id)
++    accion = 'Editar'
++    titulo = 'Categor├¡a'
++    form = CategoriaForm(instance=categoria)
++    if request.method == 'POST':
++        form = CategoriaForm(request.POST, instance=categoria)
++        if form.is_valid():
++            form.save()
++            return redirect('categoria_listar')
++        else:
++            print(form.errors)
++    context = {
++        'titulo': titulo,
++        'form': form,
++        'accion': accion,
++    }   
++    return render(request, 'partials/base-creacion.html', context)
++
++def eliminar_categoria(request, id):
++    objeto = get_object_or_404(Categoria, id=id)
++    
++    if request.method == 'POST':
++        objeto.estado = False
++        objeto.save()
++        
++    return redirect('categoria_listar')
++
++
+ def listar_experiencia(request):
+     experiencias = Experiencia.objects.all()
+-    context={'experiencias':experiencias}
++    context = {'experiencias': experiencias}
+     return render(request, 'experiencias/listar_experiencias.html', context)
++
+ def crear_experiencia(request):
+-    titulo='Experiencia'
++    accion = 'Crear'
++    titulo = 'Experiencia'
+     form = ExperienciaForm()
+     if request.method == 'POST':
+         form = ExperienciaForm(request.POST, request.FILES)
+         if form.is_valid():
+             form.save()
+             return redirect('experiencia_listar')
+-    context={
+-        'titulo':titulo,
+-        'form':form
++    context = {
++        'titulo': titulo,
++        'form': form,
++        'accion': accion,
+     }   
+     return render(request, 'partials/base-creacion.html', context)
+ 
++
+ def listar_resena(request):
+     return render(request, 'experiencias/listar_resena.html')
+\ No newline at end of file
+diff --git a/templates/partials/base-admin.html b/templates/partials/base-admin.html
+index 543cd3e..4bb9233 100644
+--- a/templates/partials/base-admin.html
++++ b/templates/partials/base-admin.html
+@@ -10,5 +10,9 @@
+ <body>
+     {%block content%}
+     {%endblock%}
++
++ 
++    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
++     {% block script %}{% endblock script %}
+ </body>
+ </html>
+\ No newline at end of file
+diff --git a/templates/partials/base-creacion.html b/templates/partials/base-creacion.html
+index 007180f..c06c3f5 100644
+--- a/templates/partials/base-creacion.html
++++ b/templates/partials/base-creacion.html
+@@ -6,7 +6,7 @@
+     <div class="container-lg">
+         <div class="row">
+             <div class="col-12">
+-                <h1>Crear {{titulo}}</h1>
++                <h1>{{accion}} {{titulo}}</h1>
+                 <form method="post" enctype="multipart/form-data">
+                     {% csrf_token %}
+                     {{ form|crispy }}
+diff --git a/templates/partials/modal-delete.html b/templates/partials/modal-delete.html
+new file mode 100644
+index 0000000..82859c5
+--- /dev/null
++++ b/templates/partials/modal-delete.html
+@@ -0,0 +1,20 @@
++<div class="modal fade" id="modalEliminar{{ id_objeto }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
++  <div class="modal-dialog">
++    <div class="modal-content">
++      <div class="modal-header">
++        <h5 class="modal-title">Eliminar {{ titulo_modal }}</h5>
++        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
++      </div>
++      <form action="{{ url_post }}" method="POST">
++          {% csrf_token %}
++          <div class="modal-body">
++            ┬┐Est├ís seguro de que quieres eliminar esta {{ titulo_modal|slice:":-1"|lower }}: <strong>{{ nombre_objeto }}</strong>?
++          </div>
++          <div class="modal-footer">
++            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
++            <button type="submit" class="btn btn-danger">Eliminar</button>
++          </div>
++      </form>
++    </div>
++  </div>
++</div>
+\ No newline at end of file
+
+commit 519e23d7a1c1c8d413e471387bae5116b4b5f797
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 08:35:16 2026 -0500
+
+    feat: implement views for listing and creating categories, experiences, and reviews
+
+diff --git a/experiencias/views.py b/experiencias/views.py
+index 08a7222..7276547 100644
+--- a/experiencias/views.py
++++ b/experiencias/views.py
+@@ -15,6 +15,8 @@ def crear_categoria(request):
+         if form.is_valid():
+             form.save()
+             return redirect('categoria_listar')
++        else:
++            print(form.errors)
+     context={
+         'titulo':titulo,
+         'form':form
+
+commit 745a5425534ff8874641fc016caf379c9d76b1c9
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 08:29:24 2026 -0500
+
+    feat: add Django project settings, experiencias models, and base templates
+
+diff --git a/app/settings.py b/app/settings.py
+index 6db8b6e..3095a42 100644
+--- a/app/settings.py
++++ b/app/settings.py
+@@ -42,7 +42,13 @@ INSTALLED_APPS = [
+     'turismo',
+     'reservas',
+     'aliados', 
++    'crispy_forms', # pip install django-crispy-forms
++    'crispy_bootstrap5', # pip install crispy-bootstrap5
+ ]
++# Configurar crispy forms
++CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
++CRISPY_TEMPLATE_PACK = "bootstrap5"
++
+ AUTH_USER_MODEL = 'usuarios.Usuario'
+ 
+ MIDDLEWARE = [
+diff --git a/experiencias/models.py b/experiencias/models.py
+index 8e8660b..24851df 100644
+--- a/experiencias/models.py
++++ b/experiencias/models.py
+@@ -16,8 +16,8 @@ class Experiencia(models.Model):
+     descripcion = models.TextField(verbose_name="Descripcion")
+     imagen = models.ImageField(upload_to=renombrar_imagen, verbose_name="Imagen")
+     precio = models.FloatField(verbose_name="Precio")
+-    duracion = models.IntegerField(verbose_name="Duracion")
+-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, verbose_name="Categoria")
++    duracion = models.IntegerField(verbose_name="Duraci├│n")
++    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, verbose_name="Categor├¡a")
+     estado= models.BooleanField(default=True, verbose_name="Estado")
+     
+     def __str__(self):
+diff --git a/templates/partials/base-admin.html b/templates/partials/base-admin.html
+index 7af079e..543cd3e 100644
+--- a/templates/partials/base-admin.html
++++ b/templates/partials/base-admin.html
+@@ -4,6 +4,8 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>{{titulo}}</title>
++    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
++
+ </head>
+ <body>
+     {%block content%}
+diff --git a/templates/partials/base-creacion.html b/templates/partials/base-creacion.html
+index e6e8050..007180f 100644
+--- a/templates/partials/base-creacion.html
++++ b/templates/partials/base-creacion.html
+@@ -1,6 +1,7 @@
+ {% extends 'partials/base-admin.html' %}
+ {% load static %}
+ 
++{% load crispy_forms_tags %}
+ {% block content %}
+     <div class="container-lg">
+         <div class="row">
+@@ -8,7 +9,7 @@
+                 <h1>Crear {{titulo}}</h1>
+                 <form method="post" enctype="multipart/form-data">
+                     {% csrf_token %}
+-                    {{ form.as_p }}
++                    {{ form|crispy }}
+                     <button type="submit">Guardar</button>
+                 </form>
+             </div>
+
+commit 189a7523901f808d53c75e2b48a1fce22d0fa9fd
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 08:23:27 2026 -0500
+
+    feat: add experiencias module with models, views, forms, templates, and url routing
+
+diff --git a/app/urls.py b/app/urls.py
+index 0921160..bbe131b 100644
+--- a/app/urls.py
++++ b/app/urls.py
+@@ -22,5 +22,6 @@ from django.urls import path, include
+ urlpatterns = [
+     path('admin/', admin.site.urls),
+     path('', include('turismo.urls')),
++    path('experiencias/', include('experiencias.urls')),
+ ]
+ urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+diff --git a/experiencias/forms.py b/experiencias/forms.py
+index a78de29..9f7d705 100644
+--- a/experiencias/forms.py
++++ b/experiencias/forms.py
+@@ -1,18 +1,18 @@
+ from django.forms import ModelForm
+ from .models import Categoria, Resena, Experiencia
+ 
+-class CategoriaForm(forms.ModelForm):
++class CategoriaForm(ModelForm):
+     class Meta:
+         model = Categoria
+         fields= '__all__'
+         exclude = ['estado']
+-class ExperienciaForm(forms.ModelForm):
++class ExperienciaForm(ModelForm):
+     class Meta:
+         model = Experiencia
+         fields= '__all__'
+         exclude = ['estado']
+ 
+-class ResenaForm(forms.ModelForm):
++class ResenaForm(ModelForm):
+     class Meta:
+         model = Resena
+         fields= '__all__'
+diff --git a/experiencias/migrations/0003_categoria_estado_experiencia_estado_resena.py b/experiencias/migrations/0003_categoria_estado_experiencia_estado_resena.py
+new file mode 100644
+index 0000000..677c360
+--- /dev/null
++++ b/experiencias/migrations/0003_categoria_estado_experiencia_estado_resena.py
+@@ -0,0 +1,37 @@
++# Generated by Django 6.1.1 on 2026-09-23 13:05
++
++import django.db.models.deletion
++from django.conf import settings
++from django.db import migrations, models
++
++
++class Migration(migrations.Migration):
++
++    dependencies = [
++        ('experiencias', '0002_alter_experiencia_imagen'),
++        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
++    ]
++
++    operations = [
++        migrations.AddField(
++            model_name='categoria',
++            name='estado',
++            field=models.BooleanField(default=True, verbose_name='Estado'),
++        ),
++        migrations.AddField(
++            model_name='experiencia',
++            name='estado',
++            field=models.BooleanField(default=True, verbose_name='Estado'),
++        ),
++        migrations.CreateModel(
++            name='Resena',
++            fields=[
++                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
++                ('calificacion', models.IntegerField(verbose_name='Calificaci├│n')),
++                ('comentario', models.TextField(verbose_name='Comentario')),
++                ('fecha_creacion', models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creacion')),
++                ('experiencia', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='experiencias.experiencia', verbose_name='Experiencia')),
++                ('usuario', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='Usuario')),
++            ],
++        ),
++    ]
+diff --git a/experiencias/models.py b/experiencias/models.py
+index b4fbe5a..8e8660b 100644
+--- a/experiencias/models.py
++++ b/experiencias/models.py
+@@ -1,5 +1,5 @@
+ from django.db import models
+-
++from usuarios.models import Usuario
+ def renombrar_imagen(instance, filename):
+     return f"experiencias/{instance.nombre}.{filename.split('.')[-1]}"
+ 
+diff --git a/experiencias/templates/categorias/listar_categorias.html b/experiencias/templates/categorias/listar_categorias.html
+new file mode 100644
+index 0000000..5f7131c
+--- /dev/null
++++ b/experiencias/templates/categorias/listar_categorias.html
+@@ -0,0 +1,24 @@
++{% extends 'partials/base-admin.html' %}
++
++
++{% block content %}
++    <a href="{% url 'categoria_crear' %}" class="btn btn-primary">Crear Categoria</a>
++<table>
++    <thead>
++        <tr>
++            <th>Nombre</th>
++            <th>Descripci├│n</th>
++            <th>Estado</th>
++        </tr>
++    </thead>
++    <tbody>
++        {% for categoria in categorias %}
++        <tr>
++            <td>{{categoria.nombre}}</td>
++            <td>{{categoria.descripcion}}</td>
++            <td>{% if categoria.estado %} Activo {% else %} Inactivo {% endif %}</td>
++        </tr>
++        {%endfor%}
++    </tbody>
++</table>
++{% endblock content %}
+\ No newline at end of file
+diff --git a/experiencias/templates/experiencias/listar_experiencias.html b/experiencias/templates/experiencias/listar_experiencias.html
+new file mode 100644
+index 0000000..a9aa8cf
+--- /dev/null
++++ b/experiencias/templates/experiencias/listar_experiencias.html
+@@ -0,0 +1,30 @@
++{% extends 'partials/base-admin.html' %}
++
++
++{% block content %}
++    <a href="{% url 'experiencia_crear' %}" class="btn btn-primary">Crear Experiencia</a>
++<table>
++    <thead>
++        <tr>
++            <th>Nombre</th>
++            <th>Descripci├│n</th>
++            <th>Precio</th>
++            <th>Duraci├│n</th>
++            <th>Categoria</th>
++            <th>Estado</th>
++        </tr>
++    </thead>
++    <tbody>
++        {% for experiencia in experiencias %}
++        <tr>
++            <td>{{experiencia.nombre}}</td>
++            <td>{{experiencia.descripcion}}</td>
++            <td>{{experiencia.precio}}</td>
++            <td>{{experiencia.duracion}}</td>
++            <td>{{experiencia.categoria}}</td>
++            <td>{% if experiencia.estado %} Activo {% else %} Inactivo {% endif %}</td>
++        </tr>
++        {%endfor%}
++    </tbody>
++</table>
++{% endblock content %}
+\ No newline at end of file
+diff --git a/experiencias/urls.py b/experiencias/urls.py
+index 5effb81..2c4b867 100644
+--- a/experiencias/urls.py
++++ b/experiencias/urls.py
+@@ -1,9 +1,15 @@
+ 
+ from django.contrib import admin
+ from django.urls import path
+-
++from .views import listar_categoria, crear_categoria, listar_experiencia, crear_experiencia, listar_resena
+ urlpatterns = [
+-    path('', ),
++    path('categoria/', listar_categoria, name='categoria_listar'),
++    path('categoria/crear/', crear_categoria, name='categoria_crear'),
++
++    path('experiencia/', listar_experiencia, name='experiencia_listar'),
++    path('experiencia/crear/', crear_experiencia, name='experiencia_crear'),
++
++    path('resena/', listar_resena, name='resena_listar'),
+ ]
+ 
+ 
+diff --git a/experiencias/views.py b/experiencias/views.py
+index 91ea44a..08a7222 100644
+--- a/experiencias/views.py
++++ b/experiencias/views.py
+@@ -1,3 +1,42 @@
+-from django.shortcuts import render
+-
++from django.shortcuts import render,redirect
++from .models import Categoria, Experiencia, Resena
++from .forms import CategoriaForm, ExperienciaForm
+ # Create your views here.
++def listar_categoria(request):
++    categorias= Categoria.objects.all()
++    titulo='Categorias'
++    context={'categorias':categorias}
++    return render(request, 'categorias/listar_categorias.html', context)
++def crear_categoria(request):
++    titulo='Categoria'
++    form = CategoriaForm()
++    if request.method == 'POST':
++        form = CategoriaForm(request.POST)
++        if form.is_valid():
++            form.save()
++            return redirect('categoria_listar')
++    context={
++        'titulo':titulo,
++        'form':form
++    }   
++    return render(request, 'partials/base-creacion.html', context)
++def listar_experiencia(request):
++    experiencias = Experiencia.objects.all()
++    context={'experiencias':experiencias}
++    return render(request, 'experiencias/listar_experiencias.html', context)
++def crear_experiencia(request):
++    titulo='Experiencia'
++    form = ExperienciaForm()
++    if request.method == 'POST':
++        form = ExperienciaForm(request.POST, request.FILES)
++        if form.is_valid():
++            form.save()
++            return redirect('experiencia_listar')
++    context={
++        'titulo':titulo,
++        'form':form
++    }   
++    return render(request, 'partials/base-creacion.html', context)
++
++def listar_resena(request):
++    return render(request, 'experiencias/listar_resena.html')
+\ No newline at end of file
+diff --git a/templates/partials/base-admin.html b/templates/partials/base-admin.html
+index e69de29..7af079e 100644
+--- a/templates/partials/base-admin.html
++++ b/templates/partials/base-admin.html
+@@ -0,0 +1,12 @@
++<!DOCTYPE html>
++<html lang="es">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>{{titulo}}</title>
++</head>
++<body>
++    {%block content%}
++    {%endblock%}
++</body>
++</html>
+\ No newline at end of file
+diff --git a/templates/partials/base-creacion.html b/templates/partials/base-creacion.html
+new file mode 100644
+index 0000000..e6e8050
+--- /dev/null
++++ b/templates/partials/base-creacion.html
+@@ -0,0 +1,17 @@
++{% extends 'partials/base-admin.html' %}
++{% load static %}
++
++{% block content %}
++    <div class="container-lg">
++        <div class="row">
++            <div class="col-12">
++                <h1>Crear {{titulo}}</h1>
++                <form method="post" enctype="multipart/form-data">
++                    {% csrf_token %}
++                    {{ form.as_p }}
++                    <button type="submit">Guardar</button>
++                </form>
++            </div>
++        </div>
++    </div>
++{% endblock %}
+\ No newline at end of file
+
+commit 60ffea857406c3ac7d97bd789bbcacc4a0779f3c
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 07:46:42 2026 -0500
+
+    feat: add Categoria, Experiencia, and Resena models and forms
+
+diff --git a/experiencias/forms.py b/experiencias/forms.py
+new file mode 100644
+index 0000000..a78de29
+--- /dev/null
++++ b/experiencias/forms.py
+@@ -0,0 +1,19 @@
++from django.forms import ModelForm
++from .models import Categoria, Resena, Experiencia
++
++class CategoriaForm(forms.ModelForm):
++    class Meta:
++        model = Categoria
++        fields= '__all__'
++        exclude = ['estado']
++class ExperienciaForm(forms.ModelForm):
++    class Meta:
++        model = Experiencia
++        fields= '__all__'
++        exclude = ['estado']
++
++class ResenaForm(forms.ModelForm):
++    class Meta:
++        model = Resena
++        fields= '__all__'
++        exclude = ['fecha_creacion']
+\ No newline at end of file
+diff --git a/experiencias/models.py b/experiencias/models.py
+index 5803eba..b4fbe5a 100644
+--- a/experiencias/models.py
++++ b/experiencias/models.py
+@@ -6,6 +6,7 @@ def renombrar_imagen(instance, filename):
+ class Categoria(models.Model):
+     nombre = models.CharField(max_length=100, verbose_name="Nombre")
+     descripcion = models.TextField(verbose_name="Descripcion")
++    estado= models.BooleanField(default=True, verbose_name="Estado")
+     def __str__(self):
+         return self.nombre
+     
+@@ -17,6 +18,8 @@ class Experiencia(models.Model):
+     precio = models.FloatField(verbose_name="Precio")
+     duracion = models.IntegerField(verbose_name="Duracion")
+     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, verbose_name="Categoria")
++    estado= models.BooleanField(default=True, verbose_name="Estado")
++    
+     def __str__(self):
+         return self.nombre
+ 
+@@ -26,4 +29,4 @@ class Resena(models.Model):
+     calificacion = models.IntegerField(verbose_name="Calificaci├│n")
+     comentario = models.TextField(verbose_name="Comentario")
+     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creacion")
+-    
+\ No newline at end of file
++     
+\ No newline at end of file
+
+commit 0f8721235442fe74c0c20e658c55dfbc9c4c4797
+Merge: 3f4c421 73f7a5e
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 07:39:41 2026 -0500
+
+    Merge branch 'main' into experiencias
+
+commit 3f4c421402d20379480f93924bd0114e6a42c1ee
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 07:39:18 2026 -0500
+
+    feat: add Categoria, Experiencia, and Resena models to experiencias app
+
+diff --git a/experiencias/models.py b/experiencias/models.py
+index 7c79aca..5803eba 100644
+--- a/experiencias/models.py
++++ b/experiencias/models.py
+@@ -19,5 +19,11 @@ class Experiencia(models.Model):
+     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, verbose_name="Categoria")
+     def __str__(self):
+         return self.nombre
+-    
++
++class Resena(models.Model):
++    usuario= models.ForeignKey(Usuario, on_delete=models.CASCADE, verbose_name="Usuario")
++    experiencia = models.ForeignKey(Experiencia, on_delete=models.CASCADE, verbose_name="Experiencia")
++    calificacion = models.IntegerField(verbose_name="Calificaci├│n")
++    comentario = models.TextField(verbose_name="Comentario")
++    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creacion")
+     
+\ No newline at end of file
+
+commit 73f7a5e5d68a428f6662c641c39578d5c196ae78
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 07:34:03 2026 -0500
+
+    feat: add Django project settings configuration
+
+diff --git a/app/settings.py b/app/settings.py
+index 78a6429..6db8b6e 100644
+--- a/app/settings.py
++++ b/app/settings.py
+@@ -39,7 +39,9 @@ INSTALLED_APPS = [
+     'django.contrib.staticfiles',
+     'usuarios',
+     'experiencias',
+-    'turismo'   
++    'turismo',
++    'reservas',
++    'aliados', 
+ ]
+ AUTH_USER_MODEL = 'usuarios.Usuario'
+ 
+
+commit 52467192dd6e2bb7a3a80e9d0edec838bf426c41
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Wed Sep 23 07:33:16 2026 -0500
+
+    feat: add aliados and reservas Django apps
+
+diff --git a/aliados/__init__.py b/aliados/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/aliados/admin.py b/aliados/admin.py
+new file mode 100644
+index 0000000..8c38f3f
+--- /dev/null
++++ b/aliados/admin.py
+@@ -0,0 +1,3 @@
++from django.contrib import admin
++
++# Register your models here.
+diff --git a/aliados/apps.py b/aliados/apps.py
+new file mode 100644
+index 0000000..18608c2
+--- /dev/null
++++ b/aliados/apps.py
+@@ -0,0 +1,5 @@
++from django.apps import AppConfig
++
++
++class AliadosConfig(AppConfig):
++    name = 'aliados'
+diff --git a/aliados/migrations/__init__.py b/aliados/migrations/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/aliados/models.py b/aliados/models.py
+new file mode 100644
+index 0000000..71a8362
+--- /dev/null
++++ b/aliados/models.py
+@@ -0,0 +1,3 @@
++from django.db import models
++
++# Create your models here.
+diff --git a/aliados/tests.py b/aliados/tests.py
+new file mode 100644
+index 0000000..7ce503c
+--- /dev/null
++++ b/aliados/tests.py
+@@ -0,0 +1,3 @@
++from django.test import TestCase
++
++# Create your tests here.
+diff --git a/aliados/views.py b/aliados/views.py
+new file mode 100644
+index 0000000..91ea44a
+--- /dev/null
++++ b/aliados/views.py
+@@ -0,0 +1,3 @@
++from django.shortcuts import render
++
++# Create your views here.
+diff --git a/reservas/__init__.py b/reservas/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/reservas/admin.py b/reservas/admin.py
+new file mode 100644
+index 0000000..8c38f3f
+--- /dev/null
++++ b/reservas/admin.py
+@@ -0,0 +1,3 @@
++from django.contrib import admin
++
++# Register your models here.
+diff --git a/reservas/apps.py b/reservas/apps.py
+new file mode 100644
+index 0000000..f2991b1
+--- /dev/null
++++ b/reservas/apps.py
+@@ -0,0 +1,5 @@
++from django.apps import AppConfig
++
++
++class ReservasConfig(AppConfig):
++    name = 'reservas'
+diff --git a/reservas/migrations/__init__.py b/reservas/migrations/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/reservas/models.py b/reservas/models.py
+new file mode 100644
+index 0000000..71a8362
+--- /dev/null
++++ b/reservas/models.py
+@@ -0,0 +1,3 @@
++from django.db import models
++
++# Create your models here.
+diff --git a/reservas/tests.py b/reservas/tests.py
+new file mode 100644
+index 0000000..7ce503c
+--- /dev/null
++++ b/reservas/tests.py
+@@ -0,0 +1,3 @@
++from django.test import TestCase
++
++# Create your tests here.
+diff --git a/reservas/views.py b/reservas/views.py
+new file mode 100644
+index 0000000..91ea44a
+--- /dev/null
++++ b/reservas/views.py
+@@ -0,0 +1,3 @@
++from django.shortcuts import render
++
++# Create your views here.
+
+commit 272be8ed6040b945bb38d2e31baac8654ad851c9
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Mon Sep 21 12:00:32 2026 -0500
+
+    feat: add role-required decorator, admin base template, and user listing view with template
+
+diff --git a/templates/partials/base-admin.html b/templates/partials/base-admin.html
+index 116eee1..22c8544 100644
+--- a/templates/partials/base-admin.html
++++ b/templates/partials/base-admin.html
+@@ -1 +1,42 @@
+-{% block content %}{% endblock content %}
+\ No newline at end of file
++{% load static %}
++<!DOCTYPE html>
++<html lang="es">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>Administraci├│n - Orinoquia Explorer</title>
++    <!-- Usamos el CSS de Bootstrap 5 ya presente en el proyecto -->
++    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
++</head>
++<body class="bg-light">
++
++    <!-- Navbar de Administraci├│n -->
++    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
++        <div class="container-fluid">
++            <a class="navbar-brand" href="#">Panel de Administraci├│n</a>
++            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
++                <span class="navbar-toggler-icon"></span>
++            </button>
++            <div class="collapse navbar-collapse" id="navbarNav">
++                <ul class="navbar-nav">
++                    <li class="nav-item">
++                        <a class="nav-link" href="/">Volver al Inicio</a>
++                    </li>
++                </ul>
++                <span class="navbar-text ms-auto">
++                    {{ request.user.first_name }} {{ request.user.last_name }} ({{ request.user.get_rol_display }})
++                </span>
++            </div>
++        </div>
++    </nav>
++    
++    <main class="container">
++        {% block content %}
++        {% endblock content %}
++    </main>
++
++    {% block scripts %}
++    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>            
++    {% endblock scripts %}
++</body>
++</html>
+\ No newline at end of file
+diff --git a/usuarios/decorators.py b/usuarios/decorators.py
+index cf8b26f..c1981d7 100644
+--- a/usuarios/decorators.py
++++ b/usuarios/decorators.py
+@@ -7,7 +7,7 @@ def rol_requerido(*roles_permitidos):
+     def decorator(view_func):
+         @wraps(view_func)
+         def wrapper(request, *args, **kwargs):
+-            if request.user.is_authenticated and request.user.rol in roles_permitidos:
++            if request.user.is_authenticated and (request.user.is_superuser or request.user.rol in roles_permitidos):
+                 return view_func(request, *args, **kwargs)
+             else:
+                 messages.error(request, "No tienes permisos para acceder a esta p├ígina")
+diff --git a/usuarios/templates/listar_usuarios.html b/usuarios/templates/listar_usuarios.html
+index 9debd14..ac8d1f7 100644
+--- a/usuarios/templates/listar_usuarios.html
++++ b/usuarios/templates/listar_usuarios.html
+@@ -1,8 +1,60 @@
+ {% extends "partials/base-admin.html" %}
+ 
+-
+ {% block content %}
+-
+-<h1>{{ titulo }}</h1>
+-
++<div class="card shadow mb-4">
++    <div class="card-header py-3 d-flex justify-content-between align-items-center">
++        <h4 class="m-0 font-weight-bold text-primary">{{ titulo }}</h4>
++        {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
++        <a href="#" class="btn btn-success btn-sm">Nuevo Usuario</a>
++        {% endif %}
++    </div>
++    
++    <div class="card-body">
++        <div class="table-responsive">
++            <table class="table table-bordered table-hover align-middle">
++                <thead class="table-dark">
++                    <tr>
++                        <th>Documento</th>
++                        <th>Nombre</th>
++                        <th>Apellido</th>
++                        <th>Rol</th>
++                        <th>Acciones</th>
++                    </tr>
++                </thead>
++                <tbody>
++                    {% for usuario in usuarios %}
++                    <tr>
++                        <td>{{ usuario.tipo_documento }} {{ usuario.documento }}</td>
++                        <td>{{ usuario.first_name }}</td>
++                        <td>{{ usuario.last_name }}</td>
++                        <td>
++                            {% if usuario.rol == 'ADMIN' %}
++                                <span class="badge bg-danger">{{ usuario.get_rol_display }}</span>
++                            {% elif usuario.rol == 'GUIA' %}
++                                <span class="badge bg-primary">{{ usuario.get_rol_display }}</span>
++                            {% else %}
++                                <span class="badge bg-secondary">{{ usuario.get_rol_display }}</span>
++                            {% endif %}
++                        </td>
++                        <td>
++                            <!-- Todos los que acceden a esta vista (ADMIN, GUIA) pueden visualizar -->
++                            <a href="#" class="btn btn-info btn-sm text-white">Visualizar</a>
++                            
++                            <!-- Solo el ADMIN puede editar y eliminar -->
++                            {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
++                            <a href="#" class="btn btn-warning btn-sm text-dark">Editar</a>
++                            <a href="#" class="btn btn-danger btn-sm">Eliminar</a>
++                            {% endif %}
++                        </td>
++                    </tr>
++                    {% empty %}
++                    <tr>
++                        <td colspan="5" class="text-center">No hay usuarios registrados.</td>
++                    </tr>
++                    {% endfor %}
++                </tbody>
++            </table>
++        </div>
++    </div>
++</div>
+ {% endblock %}
+\ No newline at end of file
+diff --git a/usuarios/views.py b/usuarios/views.py
+index 0d03b6f..f6f5343 100644
+--- a/usuarios/views.py
++++ b/usuarios/views.py
+@@ -1,10 +1,14 @@
+ from django.shortcuts import render
+ from .decorators import rol_requerido
++from .models import Usuario
+ # Create your views here.
+ 
++
+ @rol_requerido('ADMIN', 'GUIA')
+ def listar_usuarios(request):
++    usuarios = Usuario.objects.all()
+     context = {
+-        "titulo": "Listar Usuarios"
++        "titulo": "Listar Usuarios",
++        "usuarios": usuarios
+     }
+     return render(request, "listar_usuarios.html", context)
+\ No newline at end of file
+
+commit 5c116f887cf307a0587827180c58cfafe8e35314
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Mon Sep 21 11:03:20 2026 -0500
+
+    feat: add user listing feature with role-based access control and routing
+
+diff --git a/templates/partials/base-admin.html b/templates/partials/base-admin.html
+index e69de29..116eee1 100644
+--- a/templates/partials/base-admin.html
++++ b/templates/partials/base-admin.html
+@@ -0,0 +1 @@
++{% block content %}{% endblock content %}
+\ No newline at end of file
+diff --git a/turismo/urls.py b/turismo/urls.py
+index 56f0c27..e1e4664 100644
+--- a/turismo/urls.py
++++ b/turismo/urls.py
+@@ -1,7 +1,8 @@
+ from django.contrib import admin
+-from django.urls import path
++from django.urls import path, include
+ from . import views
+ 
+ urlpatterns = [
+     path('', views.index_usuario, name='index_usuario'),
++    path('usuarios/', include('usuarios.urls')),
+ ]
+diff --git a/usuarios/decorators.py b/usuarios/decorators.py
+new file mode 100644
+index 0000000..cf8b26f
+--- /dev/null
++++ b/usuarios/decorators.py
+@@ -0,0 +1,20 @@
++from functools import wraps
++from django.shortcuts import render, redirect
++from django.contrib import messages
++
++
++def rol_requerido(*roles_permitidos):
++    def decorator(view_func):
++        @wraps(view_func)
++        def wrapper(request, *args, **kwargs):
++            if request.user.is_authenticated and request.user.rol in roles_permitidos:
++                return view_func(request, *args, **kwargs)
++            else:
++                messages.error(request, "No tienes permisos para acceder a esta p├ígina")
++                return redirect(request.META.get('HTTP_REFERER', 'index_usuario'))
++            
++        return wrapper
++    return decorator
++    
++
++    
+\ No newline at end of file
+diff --git a/usuarios/templates/listar_usuarios.html b/usuarios/templates/listar_usuarios.html
+new file mode 100644
+index 0000000..9debd14
+--- /dev/null
++++ b/usuarios/templates/listar_usuarios.html
+@@ -0,0 +1,8 @@
++{% extends "partials/base-admin.html" %}
++
++
++{% block content %}
++
++<h1>{{ titulo }}</h1>
++
++{% endblock %}
+\ No newline at end of file
+diff --git a/usuarios/urls.py b/usuarios/urls.py
+index d14fd29..907a3db 100644
+--- a/usuarios/urls.py
++++ b/usuarios/urls.py
+@@ -1,6 +1,7 @@
+ from django.contrib import admin
+ from django.urls import path
++from . import views
+ 
+ urlpatterns = [
+-    path('', ),
++    path('listar-usuarios/', views.listar_usuarios, name='listar_usuarios'),
+ ]
+diff --git a/usuarios/views.py b/usuarios/views.py
+index 91ea44a..0d03b6f 100644
+--- a/usuarios/views.py
++++ b/usuarios/views.py
+@@ -1,3 +1,10 @@
+ from django.shortcuts import render
+-
++from .decorators import rol_requerido
+ # Create your views here.
++
++@rol_requerido('ADMIN', 'GUIA')
++def listar_usuarios(request):
++    context = {
++        "titulo": "Listar Usuarios"
++    }
++    return render(request, "listar_usuarios.html", context)
+\ No newline at end of file
+
+commit cf173f4f0aa9cdd014a804ac2d2ebc3fcedd9c90
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Thu Sep 17 08:55:00 2026 -0500
+
+    feat: add user authentication templates, CSS styles, and project settings
+
+diff --git a/app/settings.py b/app/settings.py
+index 78a6429..aa04db3 100644
+--- a/app/settings.py
++++ b/app/settings.py
+@@ -134,3 +134,8 @@ MAILERS = {
+         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+     },
+ }
++# Login
++
++LOGIN_URL = 'login'
++LOGIN_REDIRECT_URL = 'index_usuario'
++LOGOUT_REDIRECT_URL = 'login'
+diff --git a/app/urls.py b/app/urls.py
+index 0921160..1e92792 100644
+--- a/app/urls.py
++++ b/app/urls.py
+@@ -18,9 +18,17 @@ from django.contrib import admin
+ from django.conf import settings
+ from django.conf.urls.static import static
+ from django.urls import path, include
++from django.contrib.auth import views as auth_views
+ 
+ urlpatterns = [
+     path('admin/', admin.site.urls),
+     path('', include('turismo.urls')),
+-]
++
++    #Rutas para el login
++    path('login/', auth_views.LoginView.as_view(), name='login'),
++    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
++    #Rutas para contrase├▒a
++    path('recuperar-password/',auth_views.PasswordResetView.as_view(template_name='registration/recuperar.html'),name='recuperar-password'),
++    path('recuperar-password/done/', auth_views.PasswordResetDoneView.as_view(template_name='registration/recuperar_completo.html'), name='password_reset_done'),
++    ]
+ urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+diff --git a/static/css/style.css b/static/css/style.css
+index e8e243f..1ba2c19 100644
+--- a/static/css/style.css
++++ b/static/css/style.css
+@@ -117,4 +117,71 @@ footer a:hover {
+ 
+ .text-orinoquia-secondary {
+     color: var(--secondary-color) !important;
++}
++
++/* ==========================================
++   7. FORMULARIOS DE AUTENTICACI├ôN (LOGIN)
++   ========================================== */
++.login-wrapper {
++    display: flex;
++    justify-content: center;
++    align-items: center;
++    padding: 2rem 0;
++}
++
++.login-card {
++    width: 100%;
++    max-width: 450px;
++    border-top: 5px solid var(--primary-color) !important;
++    border-radius: 12px;
++}
++
++.login-card .form-group input[type="text"],
++.login-card .form-group input[type="password"],
++.login-card .form-group input[type="email"] {
++    width: 100%;
++    padding: 0.75rem 1rem;
++    font-size: 1rem;
++    font-weight: 400;
++    line-height: 1.5;
++    color: #495057;
++    background-color: #fff;
++    background-clip: padding-box;
++    border: 1px solid #ced4da;
++    border-radius: 0.375rem;
++    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
++}
++
++.login-card .form-group input[type="text"]:focus,
++.login-card .form-group input[type="password"]:focus,
++.login-card .form-group input[type="email"]:focus {
++    color: #495057;
++    background-color: #fff;
++    border-color: var(--primary-color);
++    outline: 0;
++    box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.25);
++}
++
++.btn-orinoquia-primary {
++    background-color: var(--primary-color);
++    color: white;
++    border: none;
++    font-weight: 600;
++    transition: background-color 0.3s ease, transform 0.2s ease;
++}
++
++.btn-orinoquia-primary:hover {
++    background-color: #b45309;
++    color: white;
++    transform: translateY(-2px);
++}
++
++.login-link {
++    color: var(--secondary-color);
++    transition: color 0.3s ease;
++}
++
++.login-link:hover {
++    color: #047857;
++    text-decoration: underline !important;
+ }
+\ No newline at end of file
+diff --git a/templates/registration/cambiar_password.html b/templates/registration/cambiar_password.html
+new file mode 100644
+index 0000000..e69de29
+diff --git a/templates/registration/cambiar_password_hecho.html b/templates/registration/cambiar_password_hecho.html
+new file mode 100644
+index 0000000..e69de29
+diff --git a/templates/registration/cambiar_password_obligatorio.html b/templates/registration/cambiar_password_obligatorio.html
+new file mode 100644
+index 0000000..e69de29
+diff --git a/templates/registration/login.html b/templates/registration/login.html
+new file mode 100644
+index 0000000..1d698dc
+--- /dev/null
++++ b/templates/registration/login.html
+@@ -0,0 +1,55 @@
++{% extends 'partials/base-user.html' %}
++{% load static %}
++
++{% block content %}
++<div class="login-wrapper">
++    <div class="card login-card shadow">
++        <div class="card-body p-5">
++            <div class="text-center mb-4">
++                <h2 class="text-orinoquia-primary fw-bold">Iniciar Sesi├│n</h2>
++                <p class="text-muted">Ingresa a tu cuenta de Orinoquia Explorer</p>
++            </div>
++
++            <form method="post" action="{% url 'login' %}">
++                {% csrf_token %}
++                
++                {% if form.non_field_errors %}
++                <div class="alert alert-danger" role="alert">
++                    {{ form.non_field_errors }}
++                </div>
++                {% endif %}
++
++                <div class="mb-3 form-group">
++                    <label for="{{ form.username.id_for_label }}" class="form-label fw-bold">Usuario</label>
++                    {{ form.username }}
++                    {% if form.username.errors %}
++                        <div class="text-danger small mt-1">{{ form.username.errors }}</div>
++                    {% endif %}
++                </div>
++
++                <div class="mb-4 form-group">
++                    <label for="{{ form.password.id_for_label }}" class="form-label fw-bold">Contrase├▒a</label>
++                    {{ form.password }}
++                    {% if form.password.errors %}
++                        <div class="text-danger small mt-1">{{ form.password.errors }}</div>
++                    {% endif %}
++                </div>
++
++                <div class="d-grid mb-3">
++                    <button type="submit" class="btn btn-orinoquia-primary btn-lg custom-login-btn">
++                        Entrar
++                    </button>
++                </div>
++                
++                {% if next %}
++                <input type="hidden" name="next" value="{{ next }}">
++                {% endif %}
++
++                <div class="text-center mt-4 pt-3 border-top">
++                    <a href="{% url 'recuperar-password' %}" class="text-decoration-none login-link">┬┐Olvidaste tu contrase├▒a?</a>
++                </div>
++            </form>
++        </div>
++    </div>
++</div>
++{% endblock %}
+diff --git a/templates/registration/recuperar.html b/templates/registration/recuperar.html
+new file mode 100644
+index 0000000..60e2fe4
+--- /dev/null
++++ b/templates/registration/recuperar.html
+@@ -0,0 +1,43 @@
++{% extends 'partials/base-user.html' %}
++{% load static %}
++
++{% block content %}
++<div class="login-wrapper">
++    <div class="card login-card shadow">
++        <div class="card-body p-5">
++            <div class="text-center mb-4">
++                <h2 class="text-orinoquia-primary fw-bold">Recuperar Contrase├▒a</h2>
++                <p class="text-muted">Ingresa tu correo electr├│nico y te enviaremos las instrucciones para restablecerla.</p>
++            </div>
++
++            <form method="post">
++                {% csrf_token %}
++                
++                {% if form.non_field_errors %}
++                <div class="alert alert-danger" role="alert">
++                    {{ form.non_field_errors }}
++                </div>
++                {% endif %}
++
++                <div class="mb-4 form-group">
++                    <label for="{{ form.email.id_for_label }}" class="form-label fw-bold">Correo Electr├│nico</label>
++                    {{ form.email }}
++                    {% if form.email.errors %}
++                        <div class="text-danger small mt-1">{{ form.email.errors }}</div>
++                    {% endif %}
++                </div>
++
++                <div class="d-grid mb-3">
++                    <button type="submit" class="btn btn-orinoquia-primary btn-lg">
++                        Enviar Instrucciones
++                    </button>
++                </div>
++
++                <div class="text-center mt-4 pt-3 border-top">
++                    <p class="mb-0">┬┐Recordaste tu contrase├▒a? <a href="{% url 'login' %}" class="text-decoration-none login-link-secondary fw-bold">Iniciar Sesi├│n</a></p>
++                </div>
++            </form>
++        </div>
++    </div>
++</div>
++{% endblock %}
+diff --git a/templates/registration/recuperar_completo.html b/templates/registration/recuperar_completo.html
+new file mode 100644
+index 0000000..8b13789
+--- /dev/null
++++ b/templates/registration/recuperar_completo.html
+@@ -0,0 +1 @@
++
+diff --git a/templates/registration/recuperar_confirmar.html b/templates/registration/recuperar_confirmar.html
+new file mode 100644
+index 0000000..e69de29
+diff --git a/templates/registration/recuperar_enviado.html b/templates/registration/recuperar_enviado.html
+new file mode 100644
+index 0000000..e69de29
+
+commit 17b2eda844a1a4da15d0434ad72cce58c5b0d711
+Merge: 32f5e4a 76a0a9f
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Tue Sep 15 08:30:03 2026 -0500
+
+    Merge pull request #1 from AntonyBotelloH/experiencias
+    
+    Experiencias
+
+commit 76a0a9f811f44e034eb0fbc3587a097495c4723c
+Merge: 8bbfb3b 32f5e4a
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Tue Sep 15 08:29:45 2026 -0500
+
+    Merge branch 'main' into experiencias
+
+commit 32f5e4a8d8aefd146eb1eeb1c218b46b50500512
+Author: AntonyBotelloH <antonybotello@gmail.com>
+Date:   Tue Sep 15 08:26:11 2026 -0500
+
+    feat: initialize Django project structure with turismo app and base templates
+
+diff --git a/app/settings.py b/app/settings.py
+index ca7c0cd..e5b6579 100644
+--- a/app/settings.py
++++ b/app/settings.py
+@@ -37,6 +37,7 @@ INSTALLED_APPS = [
+     'django.contrib.sessions',
+     'django.contrib.messages',
+     'django.contrib.staticfiles',
++    'turismo'   
+ ]
+ 
+ MIDDLEWARE = [
+diff --git a/app/urls.py b/app/urls.py
+index 3f18e4a..8b40e80 100644
+--- a/app/urls.py
++++ b/app/urls.py
+@@ -15,8 +15,9 @@ Including another URLconf
+     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+ """
+ from django.contrib import admin
+-from django.urls import path
++from django.urls import path, include
+ 
+ urlpatterns = [
+     path('admin/', admin.site.urls),
++    path('', include('turismo.urls')),
+ ]
+diff --git a/templates/partials/base-user.html b/templates/partials/base-user.html
+index 19ad911..b277784 100644
+--- a/templates/partials/base-user.html
++++ b/templates/partials/base-user.html
+@@ -6,12 +6,13 @@
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Orinoquia Explorer</title>
+     <link rel="stylesheet" href="{% static 'css/style.css' %}">
++    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+ </head>
+ <body>
+ 
+-    {% include 'nav' %}
++    {% include 'partials/nav.html' %}
+ 
+-    {% include 'header' %}
++    {% include 'partials/header.html' %}
+     
+     <main class="container my-5">
+         <div class="row">
+@@ -23,12 +24,13 @@
+         </div>
+ 
+         <div class="col-lg-4">
+-            {% include 'aside' %}
++            {% include 'partials/aside.html' %}
+         </div>
+     </main>
+-    {% include 'footer' %}
++    {% include 'partials/footer.html' %}
+ 
+     {% block scripts %}
++    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>            
+     {% endblock scripts %}
+ </body>
+ </html>
+\ No newline at end of file
+diff --git a/templates/partials/nav.html b/templates/partials/nav.html
+index d7aa0ea..7e82a6a 100644
+--- a/templates/partials/nav.html
++++ b/templates/partials/nav.html
+@@ -1,7 +1,7 @@
+ <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+     <div class="container">
+         <!-- Logo / Marca -->
+-        <a class="navbar-brand fw-bold text-warning" href="{% url 'home' %}">
++        <a class="navbar-brand fw-bold text-warning" href="{% url 'index_usuario' %}">
+             ­ƒº¡ Orinoquia Explorer
+         </a>
+         
+@@ -14,7 +14,7 @@
+         <div class="collapse navbar-collapse" id="navbarNav">
+             <ul class="navbar-nav ms-auto">
+                 <li class="nav-item">
+-                    <a class="nav-link active" href="{% url 'home' %}">Inicio</a>
++                    <a class="nav-link active" href="{% url 'index_usuario' %}">Inicio</a>
+                 </li>
+                 <li class="nav-item">
+                     <a class="nav-link" href="#">Destinos</a>
+diff --git a/templates/turismo/administracion/index.html b/turismo/__init__.py
+similarity index 100%
+rename from templates/turismo/administracion/index.html
+rename to turismo/__init__.py
+diff --git a/turismo/admin.py b/turismo/admin.py
+new file mode 100644
+index 0000000..8c38f3f
+--- /dev/null
++++ b/turismo/admin.py
+@@ -0,0 +1,3 @@
++from django.contrib import admin
++
++# Register your models here.
+diff --git a/turismo/apps.py b/turismo/apps.py
+new file mode 100644
+index 0000000..283a220
+--- /dev/null
++++ b/turismo/apps.py
+@@ -0,0 +1,5 @@
++from django.apps import AppConfig
++
++
++class TurismoConfig(AppConfig):
++    name = 'turismo'
+diff --git a/turismo/migrations/__init__.py b/turismo/migrations/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/turismo/models.py b/turismo/models.py
+new file mode 100644
+index 0000000..71a8362
+--- /dev/null
++++ b/turismo/models.py
+@@ -0,0 +1,3 @@
++from django.db import models
++
++# Create your models here.
+diff --git a/turismo/templates/turismo/administracion/index.html b/turismo/templates/turismo/administracion/index.html
+new file mode 100644
+index 0000000..e69de29
+diff --git a/templates/turismo/usuarios/index.html b/turismo/templates/turismo/usuarios/index.html
+similarity index 100%
+rename from templates/turismo/usuarios/index.html
+rename to turismo/templates/turismo/usuarios/index.html
+diff --git a/turismo/tests.py b/turismo/tests.py
+new file mode 100644
+index 0000000..7ce503c
+--- /dev/null
++++ b/turismo/tests.py
+@@ -0,0 +1,3 @@
++from django.test import TestCase
++
++# Create your tests here.
+diff --git a/turismo/urls.py b/turismo/urls.py
+new file mode 100644
+index 0000000..56f0c27
+--- /dev/null
++++ b/turismo/urls.py
+@@ -0,0 +1,7 @@
++from django.contrib import admin
++from django.urls import path
++from . import views
++
++urlpatterns = [
++    path('', views.index_usuario, name='index_usuario'),
++]
+diff --git a/turismo/views.py b/turismo/views.py
+new file mode 100644
+index 0000000..b1025a7
+--- /dev/null
++++ b/turismo/views.py
+@@ -0,0 +1,9 @@
++from django.shortcuts import render
++
++def index_usuario(request):
++    
++    context = {
++        
++    }
++
++    return render(request, "turismo/usuarios/index.html", context)
+\ No newline at end of file
+
+commit 13b2ef05df1a2c0eccc56f5be25bdff19bd86592
+Author: AntonyBotelloH <antonybotello@gmail.com>
+Date:   Tue Sep 15 07:52:32 2026 -0500
+
+    feat: add main CSS stylesheet with custom Orinoquia color palette and component styles
+
+diff --git a/static/css/style.css b/static/css/style.css
+new file mode 100644
+index 0000000..e8e243f
+--- /dev/null
++++ b/static/css/style.css
+@@ -0,0 +1,120 @@
++/* ==========================================
++   ORINOQUIA EXPLORER - ESTILOS PRINCIPALES
++   ========================================== */
++
++/* Variables de Color (Paleta Llanera) */
++:root {
++    --primary-color: #d97706;      /* Naranja atardecer / Ocre */
++    --secondary-color: #15803d;    /* Verde morichal / Sabana */
++    --dark-bg: #1e293b;            /* Gris oscuro moderno */
++    --light-bg: #f8fafc;           /* Fondo gris claro */
++    --accent-color: #fbbf24;       /* Amarillo sabanero */
++}
++
++/* Tipograf├¡a y Estilos Generales */
++body {
++    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
++    background-color: var(--light-bg);
++    color: #334155;
++    display: flex;
++    flex-direction: column;
++    min-height: 100vh;
++}
++
++main {
++    flex: 1;
++}
++
++/* ==========================================
++   1. NAVBAR
++   ========================================== */
++.navbar {
++    background-color: var(--dark-bg) !important;
++    border-bottom: 3px solid var(--primary-color);
++}
++
++.navbar-brand {
++    font-size: 1.3rem;
++    letter-spacing: 0.5px;
++}
++
++.navbar-nav .nav-link {
++    color: #e2e8f0 !important;
++    transition: color 0.3s ease;
++}
++
++.navbar-nav .nav-link:hover,
++.navbar-nav .nav-link.active {
++    color: var(--accent-color) !important;
++}
++
++/* ==========================================
++   2. HERO SECTION
++   ========================================== */
++.hero-section {
++    background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)), 
++                url('../images/orinoquia-hero.jpg') no-repeat center center;
++    background-size: cover;
++    padding: 100px 0;
++    border-bottom: 5px solid var(--accent-color);
++}
++
++.hero-section h1 {
++    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
++}
++
++/* ==========================================
++   3. TARJETAS Y CONTENIDO
++   ========================================== */
++.card {
++    border: none;
++    border-radius: 10px;
++    transition: transform 0.3s ease, box-shadow 0.3s ease;
++}
++
++.card:hover {
++    transform: translateY(-4px);
++    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
++}
++
++/* ==========================================
++   4. SIDEBAR (ASIDE)
++   ========================================== */
++aside.sidebar {
++    background-color: #ffffff;
++    border-radius: 12px;
++    border-left: 4px solid var(--secondary-color);
++}
++
++aside .card {
++    background-color: #f1f5f9;
++}
++
++/* ==========================================
++   5. FOOTER
++   ========================================== */
++footer {
++    background-color: var(--dark-bg);
++    color: #cbd5e1;
++    border-top: 4px solid var(--primary-color);
++}
++
++footer h5 {
++    letter-spacing: 0.5px;
++}
++
++footer a:hover {
++    color: var(--accent-color) !important;
++    text-decoration: underline !important;
++}
++
++/* ==========================================
++   6. CLASES UTILITARIAS (Para textos e ├¡conos)
++   ========================================== */
++.text-orinoquia-primary {
++    color: var(--primary-color) !important;
++}
++
++.text-orinoquia-secondary {
++    color: var(--secondary-color) !important;
++}
+\ No newline at end of file
+
+commit 4bb3b9b1000641c02e85eba711bff55ae34aee25
+Author: AntonyBotelloH <antonybotello@gmail.com>
+Date:   Tue Sep 15 07:52:25 2026 -0500
+
+    feat: add base templates, partial components, and stylesheet for tourism views
+
+diff --git a/templates/partials/aside.html b/templates/partials/aside.html
+new file mode 100644
+index 0000000..16909b4
+--- /dev/null
++++ b/templates/partials/aside.html
+@@ -0,0 +1,34 @@
++<aside class="sidebar p-4 bg-light rounded shadow-sm">
++    <!-- Widget 1: Clima -->
++    <div class="card mb-4 shadow-sm">
++        <div class="card-body">
++            <h5 class="card-title text-success fw-bold">ÔÿÇ´©Å Clima en el Llano</h5>
++            <p class="card-text mb-1">Temperatura actual: <strong>29┬░C</strong></p>
++            <p class="text-muted small">├ëpoca de verano ideal para sabanear, cabalgatas y avistamiento de fauna.</p>
++        </div>
++    </div>
++
++    <!-- Widget 2: Destacado del mes -->
++    <div class="card mb-4 shadow-sm">
++        <div class="card-body">
++            <h5 class="card-title text-warning fw-bold">­ƒÉå Destacado del Mes</h5>
++            <h6 class="card-subtitle mb-2 text-muted">Safari Fotogr├ífico en Vichada</h6>
++            <p class="card-text small">Ad├®ntrate en la sabana inundable y descubre chig├╝ires, toninas y la majestuosidad del Tuparro.</p>
++            <a href="#" class="btn btn-sm btn-outline-success">Ver Experiencia</a>
++        </div>
++    </div>
++
++    <!-- Widget 3: Newsletter -->
++    <div class="card shadow-sm bg-success text-white">
++        <div class="card-body">
++            <h5 class="card-title fw-bold">­ƒù║´©Å Gu├¡as Exclusivas</h5>
++            <p class="card-text small">Suscr├¡bete y recibe rutas secretas y tips para viajar por los Llanos Orientales.</p>
++            <form>
++                <div class="mb-2">
++                    <input type="email" class="form-control form-control-sm" placeholder="Tu correo electr├│nico">
++                </div>
++                <button type="submit" class="btn btn-warning btn-sm w-100 fw-bold text-dark">Suscribirme</button>
++            </form>
++        </div>
++    </div>
++</aside>
+\ No newline at end of file
+diff --git a/templates/partials/base-admin.html b/templates/partials/base-admin.html
+new file mode 100644
+index 0000000..e69de29
+diff --git a/templates/partials/base-user.html b/templates/partials/base-user.html
+new file mode 100644
+index 0000000..19ad911
+--- /dev/null
++++ b/templates/partials/base-user.html
+@@ -0,0 +1,34 @@
++{% load static %}
++<!DOCTYPE html>
++<html lang="es">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>Orinoquia Explorer</title>
++    <link rel="stylesheet" href="{% static 'css/style.css' %}">
++</head>
++<body>
++
++    {% include 'nav' %}
++
++    {% include 'header' %}
++    
++    <main class="container my-5">
++        <div class="row">
++            <div class="col-lg-8 mb-4">
++                {% block content %}
++                {% endblock content %}
++                
++            </div>
++        </div>
++
++        <div class="col-lg-4">
++            {% include 'aside' %}
++        </div>
++    </main>
++    {% include 'footer' %}
++
++    {% block scripts %}
++    {% endblock scripts %}
++</body>
++</html>
+\ No newline at end of file
+diff --git a/templates/partials/footer.html b/templates/partials/footer.html
+new file mode 100644
+index 0000000..365af27
+--- /dev/null
++++ b/templates/partials/footer.html
+@@ -0,0 +1,47 @@
++<footer class="pt-5 pb-4">
++    <div class="container text-center text-md-start">
++        <div class="row">
++            <div class="col-md-4 col-lg-4 col-xl-3 mx-auto mt-3">
++                <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Orinoquia Explorer</h5>
++                <p>Tu gu├¡a oficial de turismo para conectar con la biodiversidad, la inmensidad de las sabanas y las tradiciones del llano colombiano.</p>
++            </div>
++
++            <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
++                <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Destinos</h5>
++                <p><a href="#" class="text-white text-decoration-none">Casanare</a></p>
++                <p><a href="#" class="text-white text-decoration-none">Meta</a></p>
++                <p><a href="#" class="text-white text-decoration-none">Vichada</a></p>
++                <p><a href="#" class="text-white text-decoration-none">Arauca</a></p>
++            </div>
++
++            <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mt-3">
++                <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Enlaces ├║tiles</h5>
++                <p><a href="#" class="text-white text-decoration-none">T├®rminos y Condiciones</a></p>
++                <p><a href="#" class="text-white text-decoration-none">Pol├¡ticas de Privacidad</a></p>
++                <p><a href="#" class="text-white text-decoration-none">Preguntas Frecuentes</a></p>
++            </div>
++
++            <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-3">
++                <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Contacto</h5>
++                <p><i class="fas fa-home mr-3"></i> Yopal, Casanare - Colombia</p>
++                <p><i class="fas fa-envelope mr-3"></i> info@orinoquiaexplorer.com</p>
++                <p><i class="fas fa-phone mr-3"></i> +57 300 123 4567</p>
++            </div>
++        </div>
++
++        <hr class="mb-4">
++
++        <div class="row align-items-center">
++            <div class="col-md-7 col-lg-8">
++                <p>┬® 2026 Copyright: <strong class="text-warning">Orinoquia Explorer</strong>. Todos los derechos reservados.</p>
++            </div>
++            <div class="col-md-5 col-lg-4">
++                <div class="text-center text-md-end">
++                    <a href="#" class="text-white me-4"><i class="fab fa-facebook-f"></i></a>
++                    <a href="#" class="text-white me-4"><i class="fab fa-instagram"></i></a>
++                    <a href="#" class="text-white me-4"><i class="fab fa-youtube"></i></a>
++                </div>
++            </div>
++        </div>
++    </div>
++</footer>
+\ No newline at end of file
+diff --git a/templates/partials/header.html b/templates/partials/header.html
+new file mode 100644
+index 0000000..33c891c
+--- /dev/null
++++ b/templates/partials/header.html
+@@ -0,0 +1,10 @@
++<header class="hero-section text-white text-center">
++    <div class="container">
++        <h1 class="display-4 fw-bold mb-3">Descubre el Coraz├│n Salvaje de la Orinoquia</h1>
++        <p class="lead mb-4">Sabanas infinitas, atardeceres m├ígicos, safaris llaneros y una cultura ancestral esperando por ti.</p>
++        <div class="d-flex justify-content-center gap-3">
++            <a href="#destinos" class="btn btn-warning btn-lg fw-bold text-dark">Explorar Destinos</a>
++            <a href="#experiencias" class="btn btn-outline-light btn-lg">Planifica tu Viaje</a>
++        </div>
++    </div>
++</header>
+\ No newline at end of file
+diff --git a/templates/partials/nav.html b/templates/partials/nav.html
+new file mode 100644
+index 0000000..d7aa0ea
+--- /dev/null
++++ b/templates/partials/nav.html
+@@ -0,0 +1,34 @@
++<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
++    <div class="container">
++        <!-- Logo / Marca -->
++        <a class="navbar-brand fw-bold text-warning" href="{% url 'home' %}">
++            ­ƒº¡ Orinoquia Explorer
++        </a>
++        
++        <!-- Bot├│n responsive para m├│viles -->
++        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
++            <span class="navbar-toggler-icon"></span>
++        </button>
++
++        <!-- Enlaces del men├║ -->
++        <div class="collapse navbar-collapse" id="navbarNav">
++            <ul class="navbar-nav ms-auto">
++                <li class="nav-item">
++                    <a class="nav-link active" href="{% url 'home' %}">Inicio</a>
++                </li>
++                <li class="nav-item">
++                    <a class="nav-link" href="#">Destinos</a>
++                </li>
++                <li class="nav-item">
++                    <a class="nav-link" href="#">Experiencias</a>
++                </li>
++                <li class="nav-item">
++                    <a class="nav-link" href="#">Cultura y Gastronom├¡a</a>
++                </li>
++                <li class="nav-item">
++                    <a class="nav-link" href="#">Contacto</a>
++                </li>
++            </ul>
++        </div>
++    </div>
++</nav>
+\ No newline at end of file
+diff --git a/templates/turismo/administracion/index.html b/templates/turismo/administracion/index.html
+new file mode 100644
+index 0000000..e69de29
+diff --git a/templates/turismo/usuarios/index.html b/templates/turismo/usuarios/index.html
+new file mode 100644
+index 0000000..7f8c2d3
+--- /dev/null
++++ b/templates/turismo/usuarios/index.html
+@@ -0,0 +1,78 @@
++{% extends 'partials/base-user.html' %}
++
++{% block content %}
++<div class="container-fluid py-4">
++    <!-- Encabezado del Dashboard -->
++    <div class="d-flex justify-content-between align-items-center mb-4">
++        <h2 class="fw-bold text-orinoquia-secondary mb-0">Dashboard Administrativo</h2>
++        <a href="#" class="btn btn-primary btn-sm"><i class="fas fa-download me-2"></i>Generar Reporte</a>
++    </div>
++    
++    <!-- Tarjetas de Resumen (KPIs) -->
++    <div class="row g-4 mb-5">
++        <div class="col-md-3">
++            <div class="card shadow-sm border-0 bg-primary text-white h-100">
++                <div class="card-body">
++                    <h6 class="card-title"><i class="fas fa-users me-2"></i>Usuarios Registrados</h6>
++                    <h3 class="fw-bold mb-0">1,245</h3>
++                </div>
++            </div>
++        </div>
++        <div class="col-md-3">
++            <div class="card shadow-sm border-0 bg-success text-white h-100">
++                <div class="card-body">
++                    <h6 class="card-title"><i class="fas fa-map-marked-alt me-2"></i>Destinos Activos</h6>
++                    <h3 class="fw-bold mb-0">24</h3>
++                </div>
++            </div>
++        </div>
++        <div class="col-md-3">
++            <div class="card shadow-sm border-0 text-white h-100" class="bg-warning"> <!-- Usando clase de bootstrap en vez de style -->
++                <div class="card-body bg-warning text-dark rounded">
++                    <h6 class="card-title"><i class="fas fa-calendar-check me-2"></i>Reservas (Mes)</h6>
++                    <h3 class="fw-bold mb-0">156</h3>
++                </div>
++            </div>
++        </div>
++        <div class="col-md-3">
++            <div class="card shadow-sm border-0 bg-danger text-white h-100">
++                <div class="card-body">
++                    <h6 class="card-title"><i class="fas fa-comments me-2"></i>Nuevos Mensajes</h6>
++                    <h3 class="fw-bold mb-0">8</h3>
++                </div>
++            </div>
++        </div>
++    </div>
++    
++    <!-- Secci├│n de Gesti├│n R├ípida -->
++    <h3 class="fw-bold mb-3 text-orinoquia-primary">Gesti├│n R├ípida</h3>
++    <div class="list-group shadow-sm">
++        
++        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 border-0 border-bottom">
++            <div>
++                <i class="fas fa-plus-circle me-3 text-success fa-lg"></i> 
++                <strong>A├▒adir Nuevo Destino</strong>
++            </div>
++            <i class="fas fa-chevron-right text-muted"></i>
++        </a>
++        
++        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 border-0 border-bottom">
++            <div>
++                <i class="fas fa-images me-3 text-info fa-lg"></i> 
++                <strong>Actualizar Galer├¡a de Im├ígenes</strong>
++            </div>
++            <i class="fas fa-chevron-right text-muted"></i>
++        </a>
++        
++        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 border-0">
++            <div>
++                <i class="fas fa-users-cog me-3 text-warning fa-lg"></i> 
++                <strong>Gestionar Permisos de Usuarios</strong>
++            </div>
++            <i class="fas fa-chevron-right text-muted"></i>
++        </a>
++        
++    </div>
++</div>
++
++{% endblock content %}
+\ No newline at end of file
+
+commit 8bbfb3b0da513d65341c75953782103294844935
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Mon Sep 14 11:53:16 2026 -0500
+
+    feat: add Django project settings configuration
+
+diff --git a/app/settings.py b/app/settings.py
+index 06064b2..8f8e1ba 100644
+--- a/app/settings.py
++++ b/app/settings.py
+@@ -38,6 +38,7 @@ INSTALLED_APPS = [
+     'django.contrib.messages',
+     'django.contrib.staticfiles',
+     'usuarios',
++    'experiencias',
+ ]
+ AUTH_USER_MODEL = 'usuarios.Usuario'
+ 
+
+commit 701b80312d13ce024a654c8c04aaa61c8a137583
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Mon Sep 14 11:52:49 2026 -0500
+
+    feat: add experiencias app with Categoria and Experiencia models
+
+diff --git a/app/urls.py b/app/urls.py
+index 3f18e4a..7e292fb 100644
+--- a/app/urls.py
++++ b/app/urls.py
+@@ -16,7 +16,9 @@ Including another URLconf
+ """
+ from django.contrib import admin
+ from django.urls import path
+-
++from django.conf import settings
++from django.conf.urls.static import static
+ urlpatterns = [
+     path('admin/', admin.site.urls),
+ ]
++urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+diff --git a/experiencias/__init__.py b/experiencias/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/experiencias/admin.py b/experiencias/admin.py
+new file mode 100644
+index 0000000..9187faa
+--- /dev/null
++++ b/experiencias/admin.py
+@@ -0,0 +1,5 @@
++from django.contrib import admin
++from .models import Categoria, Experiencia
++# Register your models here.
++admin.site.register(Categoria)
++admin.site.register(Experiencia)
+\ No newline at end of file
+diff --git a/experiencias/apps.py b/experiencias/apps.py
+new file mode 100644
+index 0000000..95ed7ff
+--- /dev/null
++++ b/experiencias/apps.py
+@@ -0,0 +1,5 @@
++from django.apps import AppConfig
++
++
++class ExperienciasConfig(AppConfig):
++    name = 'experiencias'
+diff --git a/experiencias/migrations/0001_initial.py b/experiencias/migrations/0001_initial.py
+new file mode 100644
+index 0000000..f29abeb
+--- /dev/null
++++ b/experiencias/migrations/0001_initial.py
+@@ -0,0 +1,35 @@
++# Generated by Django 6.1.1 on 2026-09-14 16:35
++
++import django.db.models.deletion
++from django.db import migrations, models
++
++
++class Migration(migrations.Migration):
++
++    initial = True
++
++    dependencies = [
++    ]
++
++    operations = [
++        migrations.CreateModel(
++            name='Categoria',
++            fields=[
++                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
++                ('nombre', models.CharField(max_length=100, verbose_name='Nombre')),
++                ('descripcion', models.TextField(verbose_name='Descripcion')),
++            ],
++        ),
++        migrations.CreateModel(
++            name='Experiencia',
++            fields=[
++                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
++                ('nombre', models.CharField(max_length=100, verbose_name='Nombre')),
++                ('descripcion', models.TextField(verbose_name='Descripcion')),
++                ('imagen', models.ImageField(upload_to='experiencias', verbose_name='Imagen')),
++                ('precio', models.FloatField(verbose_name='Precio')),
++                ('duracion', models.IntegerField(verbose_name='Duracion')),
++                ('categoria', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='experiencias.categoria', verbose_name='Categoria')),
++            ],
++        ),
++    ]
+diff --git a/experiencias/migrations/0002_alter_experiencia_imagen.py b/experiencias/migrations/0002_alter_experiencia_imagen.py
+new file mode 100644
+index 0000000..688ab0b
+--- /dev/null
++++ b/experiencias/migrations/0002_alter_experiencia_imagen.py
+@@ -0,0 +1,19 @@
++# Generated by Django 6.1.1 on 2026-09-14 16:48
++
++import experiencias.models
++from django.db import migrations, models
++
++
++class Migration(migrations.Migration):
++
++    dependencies = [
++        ('experiencias', '0001_initial'),
++    ]
++
++    operations = [
++        migrations.AlterField(
++            model_name='experiencia',
++            name='imagen',
++            field=models.ImageField(upload_to=experiencias.models.renombrar_imagen, verbose_name='Imagen'),
++        ),
++    ]
+diff --git a/experiencias/migrations/__init__.py b/experiencias/migrations/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/experiencias/models.py b/experiencias/models.py
+new file mode 100644
+index 0000000..7c79aca
+--- /dev/null
++++ b/experiencias/models.py
+@@ -0,0 +1,23 @@
++from django.db import models
++
++def renombrar_imagen(instance, filename):
++    return f"experiencias/{instance.nombre}.{filename.split('.')[-1]}"
++
++class Categoria(models.Model):
++    nombre = models.CharField(max_length=100, verbose_name="Nombre")
++    descripcion = models.TextField(verbose_name="Descripcion")
++    def __str__(self):
++        return self.nombre
++    
++# Create your models here.
++class Experiencia(models.Model):
++    nombre = models.CharField(max_length=100, verbose_name="Nombre")
++    descripcion = models.TextField(verbose_name="Descripcion")
++    imagen = models.ImageField(upload_to=renombrar_imagen, verbose_name="Imagen")
++    precio = models.FloatField(verbose_name="Precio")
++    duracion = models.IntegerField(verbose_name="Duracion")
++    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, verbose_name="Categoria")
++    def __str__(self):
++        return self.nombre
++    
++    
+\ No newline at end of file
+diff --git a/experiencias/tests.py b/experiencias/tests.py
+new file mode 100644
+index 0000000..7ce503c
+--- /dev/null
++++ b/experiencias/tests.py
+@@ -0,0 +1,3 @@
++from django.test import TestCase
++
++# Create your tests here.
+diff --git a/experiencias/urls.py b/experiencias/urls.py
+new file mode 100644
+index 0000000..5effb81
+--- /dev/null
++++ b/experiencias/urls.py
+@@ -0,0 +1,9 @@
++
++from django.contrib import admin
++from django.urls import path
++
++urlpatterns = [
++    path('', ),
++]
++
++
+diff --git a/experiencias/views.py b/experiencias/views.py
+new file mode 100644
+index 0000000..91ea44a
+--- /dev/null
++++ b/experiencias/views.py
+@@ -0,0 +1,3 @@
++from django.shortcuts import render
++
++# Create your views here.
+
+commit 707664a59269a5b8a024b8398a68fbbf480903e1
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Mon Sep 14 11:14:16 2026 -0500
+
+    feat: add usuarios app with custom User model and database migrations
+
+diff --git a/app/settings.py b/app/settings.py
+index 908c297..06064b2 100644
+--- a/app/settings.py
++++ b/app/settings.py
+@@ -37,7 +37,9 @@ INSTALLED_APPS = [
+     'django.contrib.sessions',
+     'django.contrib.messages',
+     'django.contrib.staticfiles',
++    'usuarios',
+ ]
++AUTH_USER_MODEL = 'usuarios.Usuario'
+ 
+ MIDDLEWARE = [
+     'django.middleware.security.SecurityMiddleware',
+diff --git a/usuarios/admin.py b/usuarios/admin.py
+index 8c38f3f..b8062e9 100644
+--- a/usuarios/admin.py
++++ b/usuarios/admin.py
+@@ -1,3 +1,4 @@
+ from django.contrib import admin
+-
++from .models import Usuario
+ # Register your models here.
++admin.site.register(Usuario)
+\ No newline at end of file
+diff --git a/usuarios/migrations/0001_initial.py b/usuarios/migrations/0001_initial.py
+new file mode 100644
+index 0000000..b3f9673
+--- /dev/null
++++ b/usuarios/migrations/0001_initial.py
+@@ -0,0 +1,47 @@
++# Generated by Django 6.1.1 on 2026-09-14 15:45
++
++import django.contrib.auth.models
++import django.contrib.auth.validators
++import django.utils.timezone
++from django.db import migrations, models
++
++
++class Migration(migrations.Migration):
++
++    initial = True
++
++    dependencies = [
++        ('auth', '0012_alter_user_first_name_max_length'),
++    ]
++
++    operations = [
++        migrations.CreateModel(
++            name='Usuario',
++            fields=[
++                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
++                ('password', models.CharField(max_length=128, verbose_name='password')),
++                ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='last login')),
++                ('is_superuser', models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')),
++                ('username', models.CharField(error_messages={'unique': 'A user with that username already exists.'}, help_text='Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.', max_length=150, unique=True, validators=[django.contrib.auth.validators.UnicodeUsernameValidator()], verbose_name='username')),
++                ('email', models.EmailField(blank=True, max_length=254, verbose_name='email address')),
++                ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
++                ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
++                ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
++                ('first_name', models.CharField(max_length=50, verbose_name='Nombre')),
++                ('last_name', models.CharField(max_length=50, verbose_name='Apellido')),
++                ('tipo_documento', models.CharField(choices=[('CC', 'C├®dula de Ciudadan├¡a'), ('CE', 'C├®dula de Extranjer├¡a'), ('PA', 'Pasaporte'), ('PPT', 'Permiso de Permanecia Temporal'), ('TI', 'Tarjeta de Identidad'), ('RC', 'Registro Civil'), ('NU', 'Otro')], max_length=3, verbose_name='Tipo de Documento')),
++                ('documento', models.CharField(max_length=20, unique=True, verbose_name='Documento')),
++                ('fecha_nacimiento', models.DateField(verbose_name='Fecha de Nacimiento')),
++                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
++                ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
++            ],
++            options={
++                'verbose_name': 'user',
++                'verbose_name_plural': 'users',
++                'abstract': False,
++            },
++            managers=[
++                ('objects', django.contrib.auth.models.UserManager()),
++            ],
++        ),
++    ]
+diff --git a/usuarios/migrations/0002_alter_usuario_fecha_nacimiento.py b/usuarios/migrations/0002_alter_usuario_fecha_nacimiento.py
+new file mode 100644
+index 0000000..6d6dbcc
+--- /dev/null
++++ b/usuarios/migrations/0002_alter_usuario_fecha_nacimiento.py
+@@ -0,0 +1,18 @@
++# Generated by Django 6.1.1 on 2026-09-14 15:48
++
++from django.db import migrations, models
++
++
++class Migration(migrations.Migration):
++
++    dependencies = [
++        ('usuarios', '0001_initial'),
++    ]
++
++    operations = [
++        migrations.AlterField(
++            model_name='usuario',
++            name='fecha_nacimiento',
++            field=models.DateField(blank=True, verbose_name='Fecha de Nacimiento'),
++        ),
++    ]
+diff --git a/usuarios/migrations/0003_usuario_rol.py b/usuarios/migrations/0003_usuario_rol.py
+new file mode 100644
+index 0000000..e62c380
+--- /dev/null
++++ b/usuarios/migrations/0003_usuario_rol.py
+@@ -0,0 +1,18 @@
++# Generated by Django 6.1.1 on 2026-09-14 15:58
++
++from django.db import migrations, models
++
++
++class Migration(migrations.Migration):
++
++    dependencies = [
++        ('usuarios', '0002_alter_usuario_fecha_nacimiento'),
++    ]
++
++    operations = [
++        migrations.AddField(
++            model_name='usuario',
++            name='rol',
++            field=models.CharField(choices=[('ADMIN', 'Administrador'), ('GUIA', 'Guia'), ('TURISTA', 'Turista')], default='TURISTA', max_length=10, verbose_name='Rol'),
++        ),
++    ]
+diff --git a/usuarios/models.py b/usuarios/models.py
+index 71a8362..25ff502 100644
+--- a/usuarios/models.py
++++ b/usuarios/models.py
+@@ -1,3 +1,27 @@
+ from django.db import models
++from django.contrib.auth.models import AbstractUser
+ 
+-# Create your models here.
++class Usuario(AbstractUser):
++
++    ROL_CHOICES = (
++        ('ADMIN', 'Administrador'),
++        ('GUIA', 'Guia'),
++        ('TURISTA', 'Turista'),
++    )
++    rol = models.CharField(max_length=10,choices=ROL_CHOICES,default='TURISTA',verbose_name="Rol")
++    TIPO_DOCUMENTO_CHOICES = (
++        ('CC', 'C├®dula de Ciudadan├¡a'),
++        ('CE', 'C├®dula de Extranjer├¡a'),
++        ('PA', 'Pasaporte'),
++        ('PPT', 'Permiso de Permanecia Temporal'),
++        ('TI', 'Tarjeta de Identidad'),
++        ('RC', 'Registro Civil'),
++        ('NU', 'Otro')
++    )
++    first_name = models.CharField(max_length=50,blank=False,verbose_name="Nombre")
++    last_name = models.CharField(max_length=50,blank=False,verbose_name="Apellido")
++    tipo_documento = models.CharField(max_length=3,choices=TIPO_DOCUMENTO_CHOICES ,verbose_name="Tipo de Documento")
++    documento = models.CharField(max_length=20,unique=True,verbose_name="Documento")
++    fecha_nacimiento = models.DateField(blank=True, verbose_name="Fecha de Nacimiento")
++    REQUIRED_FIELDS = ["first_name", "last_name", "tipo_documento", "documento", "fecha_nacimiento"]
++    
+\ No newline at end of file
+diff --git a/usuarios/urls.py b/usuarios/urls.py
+new file mode 100644
+index 0000000..d14fd29
+--- /dev/null
++++ b/usuarios/urls.py
+@@ -0,0 +1,6 @@
++from django.contrib import admin
++from django.urls import path
++
++urlpatterns = [
++    path('', ),
++]
+
+commit c4deeda947096c6ccabefc7b8ef954dd1c897194
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Mon Sep 14 10:19:41 2026 -0500
+
+    feat: add usuarios Django app with initial boilerplate files
+
+diff --git a/usuarios/__init__.py b/usuarios/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/usuarios/admin.py b/usuarios/admin.py
+new file mode 100644
+index 0000000..8c38f3f
+--- /dev/null
++++ b/usuarios/admin.py
+@@ -0,0 +1,3 @@
++from django.contrib import admin
++
++# Register your models here.
+diff --git a/usuarios/apps.py b/usuarios/apps.py
+new file mode 100644
+index 0000000..b3fa639
+--- /dev/null
++++ b/usuarios/apps.py
+@@ -0,0 +1,5 @@
++from django.apps import AppConfig
++
++
++class UsuariosConfig(AppConfig):
++    name = 'usuarios'
+diff --git a/usuarios/migrations/__init__.py b/usuarios/migrations/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/usuarios/models.py b/usuarios/models.py
+new file mode 100644
+index 0000000..71a8362
+--- /dev/null
++++ b/usuarios/models.py
+@@ -0,0 +1,3 @@
++from django.db import models
++
++# Create your models here.
+diff --git a/usuarios/tests.py b/usuarios/tests.py
+new file mode 100644
+index 0000000..7ce503c
+--- /dev/null
++++ b/usuarios/tests.py
+@@ -0,0 +1,3 @@
++from django.test import TestCase
++
++# Create your tests here.
+diff --git a/usuarios/views.py b/usuarios/views.py
+new file mode 100644
+index 0000000..91ea44a
+--- /dev/null
++++ b/usuarios/views.py
+@@ -0,0 +1,3 @@
++from django.shortcuts import render
++
++# Create your views here.
+
+commit 8363c454745714da423f49a30969ab92e74f5f56
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Mon Sep 14 10:19:03 2026 -0500
+
+    feat: add Django project settings and initialize usuarios app
+
+diff --git a/app/settings.py b/app/settings.py
+index ca7c0cd..908c297 100644
+--- a/app/settings.py
++++ b/app/settings.py
+@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-9=%(k0^@7)0u(&5gk-ji=c6a#el0(n)z_wcszymlvz6c_5qf24
+ # SECURITY WARNING: don't run with debug turned on in production!
+ DEBUG = True
+ 
+-ALLOWED_HOSTS = []
++ALLOWED_HOSTS = ['*']
+ 
+ 
+ # Application definition
+
+commit 10e51e4af10f40cb2f490f3ec3f06e4edf4bf733
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Mon Sep 14 09:10:23 2026 -0500
+
+    feat: initialize Django project structure
+
+diff --git a/app/__init__.py b/app/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/app/asgi.py b/app/asgi.py
+new file mode 100644
+index 0000000..cc4da10
+--- /dev/null
++++ b/app/asgi.py
+@@ -0,0 +1,16 @@
++"""
++ASGI config for app project.
++
++It exposes the ASGI callable as a module-level variable named ``application``.
++
++For more information on this file, see
++https://docs.djangoproject.com/en/6.1/howto/deployment/asgi/
++"""
++
++import os
++
++from django.core.asgi import get_asgi_application
++
++os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
++
++application = get_asgi_application()
+diff --git a/app/settings.py b/app/settings.py
+new file mode 100644
+index 0000000..ca7c0cd
+--- /dev/null
++++ b/app/settings.py
+@@ -0,0 +1,132 @@
++"""
++Django settings for app project.
++
++Generated by 'django-admin startproject' using Django 6.1.1.
++
++For more information on this file, see
++https://docs.djangoproject.com/en/6.1/topics/settings/
++
++For the full list of settings and their values, see
++https://docs.djangoproject.com/en/6.1/ref/settings/
++"""
++
++from pathlib import Path
++
++# Build paths inside the project like this: BASE_DIR / 'subdir'.
++BASE_DIR = Path(__file__).resolve().parent.parent
++
++
++# Quick-start development settings - unsuitable for production
++# See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
++
++# SECURITY WARNING: keep the secret key used in production secret!
++SECRET_KEY = 'django-insecure-9=%(k0^@7)0u(&5gk-ji=c6a#el0(n)z_wcszymlvz6c_5qf24'
++
++# SECURITY WARNING: don't run with debug turned on in production!
++DEBUG = True
++
++ALLOWED_HOSTS = []
++
++
++# Application definition
++
++INSTALLED_APPS = [
++    'django.contrib.admin',
++    'django.contrib.auth',
++    'django.contrib.contenttypes',
++    'django.contrib.sessions',
++    'django.contrib.messages',
++    'django.contrib.staticfiles',
++]
++
++MIDDLEWARE = [
++    'django.middleware.security.SecurityMiddleware',
++    'django.contrib.sessions.middleware.SessionMiddleware',
++    'django.middleware.common.CommonMiddleware',
++    'django.middleware.csrf.CsrfViewMiddleware',
++    'django.contrib.auth.middleware.AuthenticationMiddleware',
++    'django.contrib.messages.middleware.MessageMiddleware',
++    'django.middleware.clickjacking.XFrameOptionsMiddleware',
++]
++
++ROOT_URLCONF = 'app.urls'
++
++TEMPLATES = [
++    {
++        'BACKEND': 'django.template.backends.django.DjangoTemplates',
++        'DIRS': [BASE_DIR / "templates"],
++        'APP_DIRS': True,
++        'OPTIONS': {
++            'context_processors': [
++                'django.template.context_processors.request',
++                'django.contrib.auth.context_processors.auth',
++                'django.contrib.messages.context_processors.messages',
++            ],
++        },
++    },
++]
++
++WSGI_APPLICATION = 'app.wsgi.application'
++
++
++# Database
++# https://docs.djangoproject.com/en/6.1/ref/settings/#databases
++
++DATABASES = {
++    'default': {
++        'ENGINE': 'django.db.backends.sqlite3',
++        'NAME': BASE_DIR / 'db.sqlite3',
++    }
++}
++
++
++# Password validation
++# https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
++
++AUTH_PASSWORD_VALIDATORS = [
++    {
++        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
++    },
++    {
++        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
++    },
++    {
++        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
++    },
++    {
++        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
++    },
++]
++
++
++# Internationalization
++# https://docs.djangoproject.com/en/6.1/topics/i18n/
++
++LANGUAGE_CODE = 'es-co'
++
++TIME_ZONE = 'America/Bogota'
++
++USE_I18N = True
++
++USE_TZ = True
++
++
++# Static files (CSS, JavaScript, Images)
++# https://docs.djangoproject.com/en/6.1/howto/static-files/
++
++STATIC_URL = 'static/'
++STATIC_ROOT = BASE_DIR / "staticfiles"
++STATICFILES_DIRS = [BASE_DIR / "static"]
++
++# Media
++MEDIA_URL = "/media/"
++MEDIA_ROOT = BASE_DIR / "media"
++
++# Email
++# https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
++
++MAILERS = {
++    'default': {
++        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
++    },
++}
+diff --git a/app/urls.py b/app/urls.py
+new file mode 100644
+index 0000000..3f18e4a
+--- /dev/null
++++ b/app/urls.py
+@@ -0,0 +1,22 @@
++"""
++URL configuration for app project.
++
++The `urlpatterns` list routes URLs to views. For more information please see:
++    https://docs.djangoproject.com/en/6.1/topics/http/urls/
++Examples:
++Function views
++    1. Add an import:  from my_app import views
++    2. Add a URL to urlpatterns:  path('', views.home, name='home')
++Class-based views
++    1. Add an import:  from other_app.views import Home
++    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
++Including another URLconf
++    1. Import the include() function: from django.urls import include, path
++    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
++"""
++from django.contrib import admin
++from django.urls import path
++
++urlpatterns = [
++    path('admin/', admin.site.urls),
++]
+diff --git a/app/wsgi.py b/app/wsgi.py
+new file mode 100644
+index 0000000..0e9b8db
+--- /dev/null
++++ b/app/wsgi.py
+@@ -0,0 +1,16 @@
++"""
++WSGI config for app project.
++
++It exposes the WSGI callable as a module-level variable named ``application``.
++
++For more information on this file, see
++https://docs.djangoproject.com/en/6.1/howto/deployment/wsgi/
++"""
++
++import os
++
++from django.core.wsgi import get_wsgi_application
++
++os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
++
++application = get_wsgi_application()
+diff --git a/manage.py b/manage.py
+new file mode 100644
+index 0000000..4931389
+--- /dev/null
++++ b/manage.py
+@@ -0,0 +1,22 @@
++#!/usr/bin/env python
++"""Django's command-line utility for administrative tasks."""
++import os
++import sys
++
++
++def main():
++    """Run administrative tasks."""
++    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
++    try:
++        from django.core.management import execute_from_command_line
++    except ImportError as exc:
++        raise ImportError(
++            "Couldn't import Django. Are you sure it's installed and "
++            "available on your PYTHONPATH environment variable? Did you "
++            "forget to activate a virtual environment?"
++        ) from exc
++    execute_from_command_line(sys.argv)
++
++
++if __name__ == '__main__':
++    main()
+
+commit 4864908cc58088092ced405690433cc1527c2837
+Author: Antony Botello Herrera <antonybotello@gmail.com>
+Date:   Mon Sep 14 08:09:17 2026 -0500
+
+    Inicio
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..ae4a3de
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,42 @@
++# Python bytecode & cache
++__pycache__/
++*.py[cod]
++*$py.class
++
++# Local environments & dependencies
++venv/
++.venv/
++env/
++ENV/
++pythonenv/
++/pip-wheel-metadata/
++/wheels/
++
++# Django local configuration & databases
++local_settings.py
++db.sqlite3
++db.sqlite3-journal
++
++# Secrets and environment variables
++.env
++.env.local
++
++# Media uploads and static collection
++media/
++staticfiles/
++static_cdn/
++
++# Logs
++*.log
++
++# Testing & Coverage
++.coverage
++htmlcov/
++.pytest_cache/
++.tox/
++
++# IDE and OS specific files
++.vscode/
++.idea/
++.DS_Store
++Thumbs.db
+\ No newline at end of file
