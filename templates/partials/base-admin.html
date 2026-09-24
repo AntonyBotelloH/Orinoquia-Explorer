@@ -126,12 +126,27 @@
     <!-- Script para inicializar y mostrar los Toasts automáticamente -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Activar enlace activo en el sidebar basado en la URL
+            // Activar enlace activo y desplegar acordeón en el sidebar basado en la URL
             const currentUrl = window.location.pathname;
             const sidebarLinks = document.querySelectorAll('#sidebar ul li a');
+            
             sidebarLinks.forEach(link => {
-                if(link.getAttribute('href') !== '#' && currentUrl.includes(link.getAttribute('href'))) {
+                const href = link.getAttribute('href');
+                if(href && href !== '#' && currentUrl.includes(href)) {
                     link.parentElement.classList.add('active');
+                    
+                    // Encontrar el menú colapsable (ul) padre y desplegarlo
+                    const parentCollapse = link.closest('ul.collapse');
+                    if (parentCollapse) {
+                        parentCollapse.classList.add('show');
+                        // Cambiar el estado del botón toggle padre
+                        const toggleBtn = document.querySelector(`a[href="#${parentCollapse.id}"]`);
+                        if (toggleBtn) {
+                            toggleBtn.setAttribute('aria-expanded', 'true');
+                            // Opcional: remover clase collapsed si Bootstrap la agregó
+                            toggleBtn.classList.remove('collapsed');
+                        }
+                    }
                 }
             });
 
