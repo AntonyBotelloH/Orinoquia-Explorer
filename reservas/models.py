@@ -26,5 +26,12 @@ class Reserva(models.Model):
     peticiones_especiales = models.TextField(blank=True, null=True, verbose_name="Peticiones Especiales")
     poliza = models.ForeignKey(PolizaSeguro, on_delete=models.SET_NULL, null=True, blank=True, related_name='reservas', verbose_name="Póliza de Seguro")
 
+    @property
+    def precio_formateado(self):
+        try:
+            return f"{int(round(float(self.precio_total))):,}".replace(",", ".")
+        except (ValueError, TypeError):
+            return str(self.precio_total)
+
     def __str__(self):
         return f"Reserva {self.id} - {self.usuario.username if self.usuario else ''} - {self.experiencia.nombre}"

@@ -129,7 +129,7 @@ def ver_experiencia(request, id):
     detalles = [
         ('Nombre', experiencia.nombre),
         ('Descripción', experiencia.descripcion),
-        ('Precio', f"${experiencia.precio:,}"),
+        ('Precio', f"${int(round(experiencia.precio)):,}".replace(',', '.')),
         ('Duración', experiencia.duracion),
         ('Categoría', experiencia.categoria.nombre if experiencia.categoria else 'Sin Categoría'),
         ('Estado', 'Activo' if experiencia.estado else 'Inactivo'),

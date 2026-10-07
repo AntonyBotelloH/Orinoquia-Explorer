@@ -26,7 +26,7 @@ def ver_reserva(request, id):
         ('Experiencia', reserva.experiencia.nombre),
         ('Fecha', reserva.fecha.strftime('%d/%m/%Y') if reserva.fecha else 'N/A'),
         ('Número de Personas', reserva.numero_personas),
-        ('Precio Total', f"${reserva.precio_total:,}"),
+        ('Precio Total', f"${int(round(reserva.precio_total)):,}".replace(',', '.')),
         ('Estado', reserva.get_estado_display()),
     ]
     context = {

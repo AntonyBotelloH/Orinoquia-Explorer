@@ -273,7 +273,7 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="fw-bold text-success">${{ res.precio_total|floatformat:0 }} COP</span>
+                                        <span class="fw-bold text-success">${{ res.precio_total|moneda_cop }} COP</span>
                                     </td>
                                     <td>
                                         {% if res.estado == 'CONFIRMADA' %}

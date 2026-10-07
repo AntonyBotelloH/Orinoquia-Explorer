@@ -64,6 +64,13 @@ class Experiencia(models.Model):
     def total_resenas(self):
         return self.resena_set.count()
 
+    @property
+    def precio_formateado(self):
+        try:
+            return f"{int(round(float(self.precio))):,}".replace(",", ".")
+        except (ValueError, TypeError):
+            return str(self.precio)
+
     def __str__(self):
         return self.nombre
 

@@ -123,7 +123,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>
                                 <span class="d-block text-muted" style="font-size: 0.75rem;">Precio por persona</span>
-                                <span class="fs-5 fw-bold text-success">${{ exp.precio|floatformat:0 }} COP</span>
+                                <span class="fs-5 fw-bold text-success">${{ exp.precio|moneda_cop }} COP</span>
                             </div>
                             <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
                                 <i class="bi bi-shield-check me-1"></i>100% Guiado
@@ -172,7 +172,7 @@
                             <div class="col-6 col-md-3">
                                 <div class="p-2 border rounded-3 text-center bg-light">
                                     <small class="text-muted d-block">Precio Unitario</small>
-                                    <strong class="text-success">${{ exp.precio|floatformat:0 }} COP</strong>
+                                    <strong class="text-success">${{ exp.precio|moneda_cop }} COP</strong>
                                 </div>
                             </div>
                             <div class="col-6 col-md-3">

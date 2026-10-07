@@ -80,6 +80,9 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'turismo.context_processors.clima_context',
             ],
+            'builtins': [
+                'turismo.templatetags.moneda',
+            ],
         },
     },
 ]

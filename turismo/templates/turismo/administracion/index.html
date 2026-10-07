@@ -51,7 +51,7 @@
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <span class="text-muted small fw-semibold text-uppercase">Ingresos Totales</span>
-                        <h3 class="fw-bold mt-2 mb-1" style="color: var(--brand-secondary);">${{ total_ingresos|floatformat:0 }}</h3>
+                        <h3 class="fw-bold mt-2 mb-1" style="color: var(--brand-secondary);">${{ total_ingresos|moneda_cop }}</h3>
                         <div class="small mt-2">
                             <span class="badge bg-warning-subtle text-dark border border-warning-subtle">
                                 <i class="bi bi-cash-stack me-1"></i>Por reservas activas
@@ -215,7 +215,7 @@
                                     </td>
                                     <td>{{ res.experiencia.nombre }}</td>
                                     <td>{{ res.fecha|date:"d M Y" }}</td>
-                                    <td class="fw-bold">${{ res.precio_total }}</td>
+                                    <td class="fw-bold">${{ res.precio_total|moneda_cop }}</td>
                                     <td>
                                         {% if res.estado == 'CONFIRMADA' %}
                                             <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Confirmada</span>
@@ -352,7 +352,15 @@ document.addEventListener("DOMContentLoaded", function() {
                     },
                     tooltip: {
                         padding: 10,
-                        boxPadding: 4
+                        boxPadding: 4,
+                        callbacks: {
+                            label: function(context) {
+                                if (context.dataset.yAxisID === 'y1') {
+                                    return context.dataset.label + ': $' + Math.round(context.raw).toLocaleString('es-CO');
+                                }
+                                return context.dataset.label + ': ' + context.raw;
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -371,7 +379,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         title: { display: true, text: 'Ingresos ($)' },
                         grid: { drawOnChartArea: false },
                         ticks: {
-                            callback: function(val) { return '$' + Number(val).toLocaleString(); }
+                            callback: function(val) { return '$' + Math.round(val).toLocaleString('es-CO'); }
                         }
                     },
                     x: {

@@ -31,7 +31,7 @@
                     <tr>
                         <td class="ps-4 fw-bold" style="color: var(--brand-secondary);">{{ experiencia.nombre }}</td>
                         <td>{{ experiencia.descripcion|truncatewords:10 }}</td>
-                        <td class="fw-bold">${{ experiencia.precio }}</td>
+                        <td class="fw-bold">${{ experiencia.precio|moneda_cop }}</td>
                         <td>{{ experiencia.duracion }}</td>
                         <td><span class="badge bg-info text-dark">{{ experiencia.categoria.nombre }}</span></td>
                         <td>
