@@ -1,38 +1,229 @@
 {% extends 'partials/base-user.html' %}
+{% load static %}
 
 {% block header %}
     {% include 'partials/header.html' %}
 {% endblock header %}
 
 {% block content %}
-<div class="container-fluid py-2">
-    <h2 class="fw-bold text-orinoquia-primary mb-4">Descubre lo Mejor de la Orinoquia</h2>
-    <p class="text-muted mb-5" style="font-size: 1.1rem;">
-        Bienvenido a <strong>Orinoquia Explorer</strong>, tu portal oficial para encontrar las mejores experiencias, 
-        destinos mágicos y vivir de cerca la cultura llanera. Sumérgete en una aventura diferente.
-    </p>
+<div class="container-fluid p-0">
+    <!-- Título y buscador -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1 text-orinoquia-primary" style="font-family: 'Montserrat', sans-serif;">
+                <i class="bi bi-compass-fill me-2 text-warning"></i>Catálogo de Experiencias
+            </h2>
+            <p class="text-muted mb-0">
+                Explora las mejores vivencias de la Orinoquía colombiana cargadas por nuestros guías certificados.
+            </p>
+        </div>
+    </div>
 
-    <!-- Sección de Destinos Destacados -->
-    <h3 class="fw-bold mb-4 text-orinoquia-secondary">Destinos Destacados</h3>
-    <div class="row g-4 mb-5">
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h5 class="card-title text-orinoquia-primary fw-bold"><i class="bi bi-geo-alt-fill me-2 text-warning"></i>Caño Cristales</h5>
-                    <p class="card-text mt-3">El río de los cinco colores, una maravilla natural inolvidable oculta en la serranía de la Macarena.</p>
-                    <a href="#" class="btn btn-outline-warning btn-sm fw-bold mt-2">Ver destino</a>
+    <!-- Barra de Búsqueda y Filtros -->
+    <div class="card shadow-sm border-0 mb-4 bg-white rounded-3">
+        <div class="card-body p-3">
+            <form method="GET" action="{% url 'index_usuario' %}" class="row g-2 align-items-center">
+                {% if categoria_actual %}
+                    <input type="hidden" name="categoria" value="{{ categoria_actual }}">
+                {% endif %}
+                <div class="col-12 col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="q" value="{{ busqueda }}" class="form-control border-start-0 bg-light" placeholder="Buscar por nombre, destino o actividad...">
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <button type="submit" class="btn btn-warning w-100 fw-bold text-dark">
+                        Buscar
+                    </button>
+                </div>
+                <div class="col-6 col-md-2">
+                    <a href="{% url 'index_usuario' %}" class="btn btn-outline-secondary w-100">
+                        Limpiar
+                    </a>
+                </div>
+            </form>
+
+            <!-- Filtros por Categoría (Pills) -->
+            <div class="d-flex flex-wrap gap-2 mt-3 pt-3 border-top">
+                <a href="{% url 'index_usuario' %}{% if busqueda %}?q={{ busqueda }}{% endif %}" 
+                   class="btn btn-sm {% if not categoria_actual %}btn-success text-white fw-bold{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+                    Todas ({{ total_activas }})
+                </a>
+                {% for cat in categorias %}
+                <a href="{% url 'index_usuario' %}?categoria={{ cat.id }}{% if busqueda %}&q={{ busqueda }}{% endif %}" 
+                   class="btn btn-sm {% if categoria_actual == cat.id %}btn-success text-white fw-bold{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+                    {{ cat.nombre }} ({{ cat.num_exp }})
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensaje si hay filtro activo -->
+    {% if busqueda or categoria_actual %}
+    <div class="alert alert-light border d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-3">
+        <span class="small text-muted">
+            Mostrando <strong>{{ total_encontradas }}</strong> experiencia{{ total_encontradas|pluralize:"s" }} encontrada{{ total_encontradas|pluralize:"s" }}
+            {% if busqueda %}para "<em>{{ busqueda }}</em>"{% endif %}
+        </span>
+        <a href="{% url 'index_usuario' %}" class="btn btn-sm btn-link text-decoration-none text-danger py-0">
+            <i class="bi bi-x-circle me-1"></i> Quitar filtros
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Rejilla de Experiencias Dinámicas -->
+    <div class="row g-4 mb-4" id="experiencias">
+        {% for exp in experiencias %}
+        <div class="col-12 col-md-6">
+            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden exp-card">
+                <!-- Imagen con Badges Superpuestos -->
+                <div class="position-relative" style="height: 200px; overflow: hidden; background-color: #e2e8f0;">
+                    {% if exp.imagen %}
+                        <img src="{{ exp.imagen.url }}" alt="{{ exp.nombre }}" class="w-100 h-100" style="object-fit: cover;">
+                    {% else %}
+                        <img src="{% static 'images/banner.jpeg' %}" alt="{{ exp.nombre }}" class="w-100 h-100" style="object-fit: cover;">
+                    {% endif %}
+                    
+                    <!-- Badge Categoría -->
+                    <span class="badge bg-warning text-dark fw-bold position-absolute top-0 start-0 m-3 shadow-sm">
+                        <i class="bi bi-tag-fill me-1"></i>{{ exp.categoria.nombre }}
+                    </span>
+                    
+                    <!-- Badge Duración -->
+                    <span class="badge bg-dark bg-opacity-75 text-white position-absolute top-0 end-0 m-3 shadow-sm">
+                        <i class="bi bi-clock-fill me-1"></i>{{ exp.duracion }}h
+                    </span>
+                </div>
+
+                <!-- Contenido de la Tarjeta -->
+                <div class="card-body d-flex flex-column p-4">
+                    <h5 class="card-title fw-bold text-orinoquia-primary mb-2" style="font-family: 'Montserrat', sans-serif;">
+                        {{ exp.nombre }}
+                    </h5>
+                    <p class="card-text text-muted small flex-grow-1 mb-3">
+                        {{ exp.descripcion|truncatewords:20 }}
+                    </p>
+
+                    <div class="pt-3 border-top mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <span class="d-block text-muted" style="font-size: 0.75rem;">Precio por persona</span>
+                                <span class="fs-5 fw-bold text-success">${{ exp.precio|floatformat:0 }} COP</span>
+                            </div>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                <i class="bi bi-shield-check me-1"></i>100% Guiado
+                            </span>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-success fw-bold w-100 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalExp{{ exp.id }}">
+                            <i class="bi bi-compass-fill me-1"></i> Ver Experiencia
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h5 class="card-title text-orinoquia-primary fw-bold"><i class="bi bi-geo-alt-fill me-2 text-warning"></i>Safari Llanero</h5>
-                    <p class="card-text mt-3">Recorre las inmensas sabanas, visita hatos tradicionales y deslúmbrate con atardeceres mágicos.</p>
-                    <a href="#" class="btn btn-outline-warning btn-sm fw-bold mt-2">Ver destino</a>
+
+        <!-- Modal de Detalle de Experiencia -->
+        <div class="modal fade" id="modalExp{{ exp.id }}" tabindex="-1" aria-labelledby="modalExpLabel{{ exp.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                    <!-- Cabecera de Imagen en Modal -->
+                    <div class="position-relative" style="height: 250px; background-color: #024944;">
+                        {% if exp.imagen %}
+                            <img src="{{ exp.imagen.url }}" alt="{{ exp.nombre }}" class="w-100 h-100" style="object-fit: cover; opacity: 0.85;">
+                        {% else %}
+                            <img src="{% static 'images/banner.jpeg' %}" alt="{{ exp.nombre }}" class="w-100 h-100" style="object-fit: cover; opacity: 0.85;">
+                        {% endif %}
+                        <div class="position-absolute top-0 end-0 p-3">
+                            <button type="button" class="btn btn-close btn-close-white shadow-sm" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="position-absolute bottom-0 start-0 p-4 text-white" style="background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%); width: 100%;">
+                            <span class="badge bg-warning text-dark fw-bold mb-2">
+                                <i class="bi bi-tag-fill me-1"></i>{{ exp.categoria.nombre }}
+                            </span>
+                            <h3 class="fw-bold mb-0 text-white" style="font-family: 'Montserrat', sans-serif;">{{ exp.nombre }}</h3>
+                        </div>
+                    </div>
+
+                    <!-- Cuerpo del Modal -->
+                    <div class="modal-body p-4">
+                        <div class="row g-3 mb-4">
+                            <div class="col-6 col-md-3">
+                                <div class="p-2 border rounded-3 text-center bg-light">
+                                    <small class="text-muted d-block">Duración</small>
+                                    <strong class="text-dark"><i class="bi bi-clock me-1 text-warning"></i>{{ exp.duracion }} Horas</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-2 border rounded-3 text-center bg-light">
+                                    <small class="text-muted d-block">Precio Unitario</small>
+                                    <strong class="text-success">${{ exp.precio|floatformat:0 }} COP</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-2 border rounded-3 text-center bg-light">
+                                    <small class="text-muted d-block">Categoría</small>
+                                    <strong class="text-dark">{{ exp.categoria.nombre|truncatewords:2 }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-2 border rounded-3 text-center bg-light">
+                                    <small class="text-muted d-block">Dificultad</small>
+                                    <strong class="text-primary"><i class="bi bi-activity me-1"></i>Moderada</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="fw-bold text-dark mb-2">Descripción Completa</h5>
+                        <p class="text-muted" style="line-height: 1.7;">
+                            {{ exp.descripcion }}
+                        </p>
+
+                        <h6 class="fw-bold text-dark mt-4 mb-2">¿Qué incluye esta experiencia?</h6>
+                        <ul class="list-unstyled row g-2 small text-muted">
+                            <li class="col-12 col-md-6"><i class="bi bi-check-circle-fill text-success me-2"></i>Guía local baquiano bilingüe o certificado</li>
+                            <li class="col-12 col-md-6"><i class="bi bi-check-circle-fill text-success me-2"></i>Póliza de asistencia médica y rescate</li>
+                            <li class="col-12 col-md-6"><i class="bi bi-check-circle-fill text-success me-2"></i>Hidratación y refrigerio típico llanero</li>
+                            <li class="col-12 col-md-6"><i class="bi bi-check-circle-fill text-success me-2"></i>Equipos de seguridad certificados</li>
+                        </ul>
+                    </div>
+
+                    <!-- Pie del Modal -->
+                    <div class="modal-footer bg-light p-3 border-top-0 d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+                            Cerrar
+                        </button>
+                        {% if user.is_authenticated %}
+                            <a href="mailto:info@orinoquiaexplorer.com?subject=Reserva:%20{{ exp.nombre|urlencode }}" class="btn btn-success fw-bold px-4">
+                                <i class="bi bi-calendar-check me-1"></i> Solicitar Reserva
+                            </a>
+                        {% else %}
+                            <a href="{% url 'login' %}?next={% url 'index_usuario' %}" class="btn btn-warning fw-bold text-dark px-4">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión para Reservar
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5 bg-white rounded-4 shadow-sm p-4">
+                <i class="bi bi-compass text-muted fs-1 d-block mb-3"></i>
+                <h4 class="fw-bold text-muted">No se encontraron experiencias</h4>
+                <p class="text-muted small mb-3">
+                    Prueba cambiando los términos de búsqueda o seleccionando otra categoría.
+                </p>
+                <a href="{% url 'index_usuario' %}" class="btn btn-warning fw-bold text-dark btn-sm">
+                    Ver todas las experiencias
+                </a>
+            </div>
+        </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock content %}

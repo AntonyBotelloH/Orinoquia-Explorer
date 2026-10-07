@@ -3,12 +3,51 @@ from usuarios.decorators import rol_requerido
 from usuarios.models import Usuario
 from experiencias.models import Categoria, Experiencia
 from reservas.models import Reserva, PolizaSeguro
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Q
 from django.utils import timezone
 import json
 
 def index_usuario(request):
-    return render(request, "turismo/usuarios/index.html", {})
+    categoria_id = request.GET.get('categoria')
+    q = request.GET.get('q', '').strip()
+
+    # Experiencias activas subidas en la plataforma
+    experiencias_qs = Experiencia.objects.filter(estado=True).select_related('categoria')
+
+    if categoria_id and categoria_id.isdigit():
+        experiencias_qs = experiencias_qs.filter(categoria_id=int(categoria_id))
+
+    if q:
+        experiencias_qs = experiencias_qs.filter(
+            Q(nombre__icontains=q) | 
+            Q(descripcion__icontains=q) | 
+            Q(categoria__nombre__icontains=q)
+        )
+
+    experiencias = list(experiencias_qs.order_by('-id'))
+
+    # Categorías activas con conteo real de experiencias
+    categorias = (
+        Categoria.objects.filter(estado=True)
+        .annotate(num_exp=Count('experiencia', filter=Q(experiencia__estado=True)))
+        .filter(num_exp__gt=0)
+        .order_by('-num_exp')
+    )
+
+    total_activas = Experiencia.objects.filter(estado=True).count()
+    destacada = Experiencia.objects.filter(estado=True).order_by('-precio').first()
+
+    context = {
+        'titulo': 'Inicio | Descubre la Orinoquia',
+        'experiencias': experiencias,
+        'total_activas': total_activas,
+        'total_encontradas': len(experiencias),
+        'categorias': categorias,
+        'categoria_actual': int(categoria_id) if (categoria_id and categoria_id.isdigit()) else None,
+        'busqueda': q,
+        'destacada': destacada,
+    }
+    return render(request, "turismo/usuarios/index.html", context)
 
 @rol_requerido('ADMIN', 'GUIA')
 def dashboard_admin(request):
