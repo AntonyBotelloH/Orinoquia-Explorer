@@ -1,8 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from .models import Reserva, PolizaSeguro
 from .forms import ReservaForm, PolizaSeguroForm
 from django.contrib import messages
 from usuarios.decorators import rol_requerido
+
+# ==================== RESERVAS ====================
 
 @rol_requerido('ADMIN', 'GUIA')
 def listar_reserva(request):
@@ -10,13 +13,12 @@ def listar_reserva(request):
     titulo = 'Reservas'
     context = {
         'reservas': reservas,
-        'titulo': titulo
+        'titulo': titulo,
     }
     return render(request, 'reservas/listar_reservas.html', context)
 
 @rol_requerido('ADMIN')
 def crear_reserva(request):
-    accion = 'Crear'
     titulo = 'Reserva'
     form = ReservaForm()
     if request.method == 'POST':
@@ -29,17 +31,20 @@ def crear_reserva(request):
             for campo, errores in form.errors.items():
                 for error in errores:
                     messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
+    
+    reservas = Reserva.objects.all()
     context = {
+        'reservas': reservas,
         'titulo': titulo,
         'form': form,
-        'accion': accion,
+        'accion': 'C',
+        'url_listar': reverse('reserva_listar'),
     }
-    return render(request, 'partials/base-creacion.html', context)
+    return render(request, 'reservas/listar_reservas.html', context)
 
 @rol_requerido('ADMIN')
 def editar_reserva(request, id):
     reserva = get_object_or_404(Reserva, id=id)
-    accion = 'Editar'
     titulo = 'Reserva'
     form = ReservaForm(instance=reserva)
     if request.method == 'POST':
@@ -53,12 +58,16 @@ def editar_reserva(request, id):
                 for error in errores:
                     messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
 
+    reservas = Reserva.objects.all()
     context = {
+        'reservas': reservas,
         'titulo': titulo,
         'form': form,
-        'accion': accion,
+        'objeto': reserva,
+        'accion': 'U',
+        'url_listar': reverse('reserva_listar'),
     }
-    return render(request, 'partials/base-creacion.html', context)
+    return render(request, 'reservas/listar_reservas.html', context)
 
 @rol_requerido('ADMIN')
 def eliminar_reserva(request, id):
@@ -67,7 +76,20 @@ def eliminar_reserva(request, id):
         objeto.estado = 'CANCELADA'
         objeto.save()
         messages.success(request, 'Reserva cancelada correctamente.')
-    return redirect('reserva_listar')
+        return redirect('reserva_listar')
+
+    reservas = Reserva.objects.all()
+    context = {
+        'reservas': reservas,
+        'titulo': 'Reserva',
+        'objeto': objeto,
+        'accion': 'D',
+        'url_listar': reverse('reserva_listar'),
+    }
+    return render(request, 'reservas/listar_reservas.html', context)
+
+
+# ==================== PÓLIZAS ====================
 
 @rol_requerido('ADMIN', 'GUIA')
 def listar_poliza(request):
@@ -75,13 +97,12 @@ def listar_poliza(request):
     titulo = 'Pólizas de Seguro'
     context = {
         'polizas': polizas,
-        'titulo': titulo
+        'titulo': titulo,
     }
     return render(request, 'reservas/listar_polizas.html', context)
 
 @rol_requerido('ADMIN')
 def crear_poliza(request):
-    accion = 'Crear'
     titulo = 'Póliza de Seguro'
     form = PolizaSeguroForm()
     if request.method == 'POST':
@@ -94,17 +115,20 @@ def crear_poliza(request):
             for campo, errores in form.errors.items():
                 for error in errores:
                     messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
+    
+    polizas = PolizaSeguro.objects.all().order_by('fecha_expiracion')
     context = {
+        'polizas': polizas,
         'titulo': titulo,
         'form': form,
-        'accion': accion,
+        'accion': 'C',
+        'url_listar': reverse('poliza_listar'),
     }
-    return render(request, 'partials/base-creacion.html', context)
+    return render(request, 'reservas/listar_polizas.html', context)
 
 @rol_requerido('ADMIN')
 def editar_poliza(request, id):
     poliza = get_object_or_404(PolizaSeguro, id=id)
-    accion = 'Editar'
     titulo = 'Póliza de Seguro'
     form = PolizaSeguroForm(instance=poliza)
     if request.method == 'POST':
@@ -118,12 +142,16 @@ def editar_poliza(request, id):
                 for error in errores:
                     messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
 
+    polizas = PolizaSeguro.objects.all().order_by('fecha_expiracion')
     context = {
+        'polizas': polizas,
         'titulo': titulo,
         'form': form,
-        'accion': accion,
+        'objeto': poliza,
+        'accion': 'U',
+        'url_listar': reverse('poliza_listar'),
     }
-    return render(request, 'partials/base-creacion.html', context)
+    return render(request, 'reservas/listar_polizas.html', context)
 
 @rol_requerido('ADMIN')
 def eliminar_poliza(request, id):
@@ -131,4 +159,15 @@ def eliminar_poliza(request, id):
     if request.method == 'POST':
         objeto.delete()
         messages.success(request, 'Póliza eliminada correctamente.')
-    return redirect('poliza_listar')
+        return redirect('poliza_listar')
+
+    polizas = PolizaSeguro.objects.all().order_by('fecha_expiracion')
+    context = {
+        'polizas': polizas,
+        'titulo': 'Póliza de Seguro',
+        'objeto': objeto,
+        'accion': 'D',
+        'url_listar': reverse('poliza_listar'),
+    }
+    return render(request, 'reservas/listar_polizas.html', context)
+

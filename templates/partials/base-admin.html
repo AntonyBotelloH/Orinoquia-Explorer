@@ -117,7 +117,17 @@
     </script>
         <script src="{% static 'js/DataTables/datatables.min.js' %}"></script>
 
-    {% block modales %}{% endblock modales %}
+    {% block modales %}
+        {% if accion == 'C' %}
+            {% include 'modales/modal_crear.html' %}
+        {% elif accion == 'U' %}
+            {% include 'modales/modal_editar.html' %}
+        {% elif accion == 'R' %}
+            {% include 'modales/modal_leer.html' %}
+        {% elif accion == 'D' %}
+            {% include 'modales/modal_eliminar.html' %}
+        {% endif %}
+    {% endblock modales %}
 
     {% if accion %}
     <script>

@@ -1,9 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from .models import Categoria, Experiencia, Resena
 from .forms import CategoriaForm, ExperienciaForm
 from django.contrib import messages
 from usuarios.decorators import rol_requerido
+
 # Create your views here.
+
+# ==================== CATEGORÍAS ====================
 
 @rol_requerido('ADMIN', 'GUIA')
 def listar_categoria(request):
@@ -11,37 +15,38 @@ def listar_categoria(request):
     titulo = 'Categorías'
     context = {
         'categorias': categorias,
-        'titulo': titulo
+        'titulo': titulo,
     }
     return render(request, 'categorias/listar_categorias.html', context)
 
 @rol_requerido('ADMIN')
 def crear_categoria(request):
-    accion = 'Crear'
     titulo = 'Categoría'
     form = CategoriaForm()
     if request.method == 'POST':
         form = CategoriaForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, f'Categoría {request.POST.get("nombre")} creada correctamente.')
+            messages.success(request, f'Categoría "{request.POST.get("nombre")}" creada correctamente.')
             return redirect('categoria_listar')
         else:
             for campo, errores in form.errors.items():
                 for error in errores:
                     messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
+    
+    categorias = Categoria.objects.all()
     context = {
+        'categorias': categorias,
         'titulo': titulo,
         'form': form,
-        'accion': accion,
+        'accion': 'C',
+        'url_listar': reverse('categoria_listar'),
     }   
-    
-    return render(request, 'partials/base-creacion.html', context)
+    return render(request, 'categorias/listar_categorias.html', context)
 
 @rol_requerido('ADMIN')
 def editar_categoria(request, id):
     categoria = get_object_or_404(Categoria, id=id)
-    accion = 'Editar'
     titulo = 'Categoría'
     form = CategoriaForm(instance=categoria)
     if request.method == 'POST':
@@ -55,34 +60,51 @@ def editar_categoria(request, id):
                 for error in errores:
                     messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
 
+    categorias = Categoria.objects.all()
     context = {
+        'categorias': categorias,
         'titulo': titulo,
         'form': form,
-        'accion': accion,
+        'objeto': categoria,
+        'accion': 'U',
+        'url_listar': reverse('categoria_listar'),
     }   
-    return render(request, 'partials/base-creacion.html', context)
+    return render(request, 'categorias/listar_categorias.html', context)
 
 @rol_requerido('ADMIN')
 def eliminar_categoria(request, id):
     objeto = get_object_or_404(Categoria, id=id)
-    
     if request.method == 'POST':
         objeto.estado = False
         objeto.save()
         messages.success(request, 'Categoría eliminada correctamente.')
+        return redirect('categoria_listar')
         
-    return redirect('categoria_listar')
+    categorias = Categoria.objects.all()
+    context = {
+        'categorias': categorias,
+        'titulo': 'Categoría',
+        'objeto': objeto,
+        'accion': 'D',
+        'url_listar': reverse('categoria_listar'),
+    }
+    return render(request, 'categorias/listar_categorias.html', context)
 
+
+# ==================== EXPERIENCIAS ====================
 
 @rol_requerido('ADMIN', 'GUIA')
 def listar_experiencia(request):
     experiencias = Experiencia.objects.all()
-    context = {'experiencias': experiencias}
+    titulo = 'Experiencias'
+    context = {
+        'experiencias': experiencias,
+        'titulo': titulo,
+    }
     return render(request, 'experiencias/listar_experiencias.html', context)
 
 @rol_requerido('ADMIN')
 def crear_experiencia(request):
-    accion = 'Crear'
     titulo = 'Experiencia'
     form = ExperienciaForm()
     if request.method == 'POST':
@@ -95,14 +117,67 @@ def crear_experiencia(request):
             for campo, errores in form.errors.items():
                 for error in errores:
                     messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
+    
+    experiencias = Experiencia.objects.all()
     context = {
+        'experiencias': experiencias,
         'titulo': titulo,
         'form': form,
-        'accion': accion,
+        'accion': 'C',
+        'url_listar': reverse('experiencia_listar'),
     }   
-    return render(request, 'partials/base-creacion.html', context)
+    return render(request, 'experiencias/listar_experiencias.html', context)
 
+@rol_requerido('ADMIN')
+def editar_experiencia(request, id):
+    experiencia = get_object_or_404(Experiencia, id=id)
+    titulo = 'Experiencia'
+    form = ExperienciaForm(instance=experiencia)
+    if request.method == 'POST':
+        form = ExperienciaForm(request.POST, request.FILES, instance=experiencia)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Experiencia actualizada correctamente.')
+            return redirect('experiencia_listar')
+        else:
+            for campo, errores in form.errors.items():
+                for error in errores:
+                    messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
+
+    experiencias = Experiencia.objects.all()
+    context = {
+        'experiencias': experiencias,
+        'titulo': titulo,
+        'form': form,
+        'objeto': experiencia,
+        'accion': 'U',
+        'url_listar': reverse('experiencia_listar'),
+    }   
+    return render(request, 'experiencias/listar_experiencias.html', context)
+
+@rol_requerido('ADMIN')
+def eliminar_experiencia(request, id):
+    objeto = get_object_or_404(Experiencia, id=id)
+    if request.method == 'POST':
+        objeto.estado = False
+        objeto.save()
+        messages.success(request, 'Experiencia eliminada correctamente.')
+        return redirect('experiencia_listar')
+
+    experiencias = Experiencia.objects.all()
+    context = {
+        'experiencias': experiencias,
+        'titulo': 'Experiencia',
+        'objeto': objeto,
+        'accion': 'D',
+        'url_listar': reverse('experiencia_listar'),
+    }
+    return render(request, 'experiencias/listar_experiencias.html', context)
+
+
+# ==================== RESEÑAS ====================
 
 @rol_requerido('ADMIN', 'GUIA')
 def listar_resena(request):
-    return render(request, 'experiencias/listar_resena.html')
+    resenas = Resena.objects.all()
+    return render(request, 'experiencias/listar_resena.html', {'resenas': resenas})
