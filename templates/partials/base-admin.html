@@ -117,6 +117,22 @@
     </script>
         <script src="{% static 'js/DataTables/datatables.min.js' %}"></script>
 
+    {% block modales %}{% endblock modales %}
+
+    {% if accion %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var modalEl = document.querySelector('.modal');
+            if (modalEl) {
+                var modalInstance = new bootstrap.Modal(modalEl, {
+                    backdrop: 'static'
+                });
+                modalInstance.show();
+            }
+        });
+    </script>
+    {% endif %}
+
     {% block script %}{% endblock script %}
 </body>
 </html>

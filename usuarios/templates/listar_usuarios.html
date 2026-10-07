@@ -4,7 +4,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold" style="color: var(--brand-primary);">{{ titulo|default:"Gestión de Usuarios" }}</h2>
     {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
-    <a href="#" class="btn btn-primary fw-bold">
+    <a href="{% url 'crear_usuario' %}" class="btn btn-primary fw-bold">
         <i class="bi bi-person-plus-fill me-2"></i> Nuevo Usuario
     </a>
     {% endif %}
@@ -41,16 +41,16 @@
                         <td class="text-center pe-4">
                             <div class="d-flex justify-content-center gap-1">
                                 <!-- Todos pueden visualizar -->
-                                <button class="btn btn-sm btn-outline-info" title="Visualizar">
+                                <a href="{% url 'usuario_accion' usuario.id 'R' %}" class="btn btn-sm btn-outline-info" title="Visualizar">
                                     <i class="bi bi-eye"></i>
-                                </button>
+                                </a>
                                 
                                 <!-- Solo el ADMIN puede editar y eliminar -->
                                 {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
-                                <a href="#" class="btn btn-sm btn-outline-primary" title="Editar">
+                                <a href="{% url 'usuario_accion' usuario.id 'U' %}" class="btn btn-sm btn-outline-primary" title="Editar">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
-                                <a href="#" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                <a href="{% url 'usuario_accion' usuario.id 'D' %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
                                     <i class="bi bi-trash"></i>
                                 </a>
                                 {% endif %}
@@ -70,4 +70,16 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}
+
+{% block modales %}
+    {% if accion == 'C' %}
+        {% include 'modales/modal_crear.html' %}
+    {% elif accion == 'U' %}
+        {% include 'modales/modal_editar.html' %}
+    {% elif accion == 'R' %}
+        {% include 'modales/modal_leer.html' %}
+    {% elif accion == 'D' %}
+        {% include 'modales/modal_eliminar.html' %}
+    {% endif %}
+{% endblock modales %}
