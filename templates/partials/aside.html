@@ -1,18 +1,43 @@
 {% load static %}
 <aside class="sidebar p-4 bg-light rounded-4 shadow-sm">
-    <!-- Widget 1: Clima en el Llano -->
-    <div class="card mb-4 shadow-sm border-0 rounded-3">
+    <!-- Widget 1: Clima en los Llanos (En vivo y estacional) -->
+    <div class="card mb-4 shadow-sm border-0 rounded-3 bg-white">
         <div class="card-body">
-            <h6 class="card-title text-success fw-bold mb-2">
-                <i class="bi bi-sun-fill text-warning me-2"></i>Clima en los Llanos
-            </h6>
-            <div class="d-flex align-items-center justify-content-between mb-2">
-                <span class="fs-4 fw-bold text-dark">29°C</span>
-                <span class="badge bg-warning text-dark"><i class="bi bi-brightness-high me-1"></i>Verano Llanero</span>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="card-title text-success fw-bold mb-0">
+                    <i class="bi {{ clima_actual.icono|default:'bi-sun-fill' }} {{ clima_actual.icono_color|default:'text-warning' }} me-2"></i>Clima en los Llanos
+                </h6>
+                <span class="badge bg-light text-muted border small" style="font-size: 0.7rem;" title="Referencia geográfica Villavicencio / Meta">
+                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>Meta
+                </span>
             </div>
-            <p class="text-muted small mb-0">
-                Condiciones ideales para safaris fotográficos, navegación por ríos y cabalgatas en sabana.
-            </p>
+
+            <div class="d-flex align-items-center justify-content-between my-2">
+                <div>
+                    <span class="fs-3 fw-bold text-dark">{{ clima_actual.temperatura|default:"28" }}°C</span>
+                    <small class="text-muted d-block fw-semibold" style="font-size: 0.78rem;">
+                        {{ clima_actual.condicion|default:"Parcialmente nublado" }}
+                    </small>
+                </div>
+                <div class="text-end">
+                    <span class="badge {{ clima_mes.badge_color|default:'bg-warning text-dark' }} d-inline-block mb-1 shadow-sm">
+                        {{ clima_mes.temporada|truncatewords:3 }}
+                    </span>
+                    <div class="small text-muted" style="font-size: 0.72rem;">
+                        <span class="me-1"><i class="bi bi-droplet-half text-info"></i> {{ clima_actual.humedad|default:"75" }}%</span>
+                        <span><i class="bi bi-wind text-secondary"></i> {{ clima_actual.viento|default:"10" }} km/h</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-2 bg-light rounded-3 mt-2 border">
+                <div class="d-flex align-items-start gap-1">
+                    <i class="bi bi-info-circle-fill text-success mt-1 me-1" style="font-size: 0.85rem;"></i>
+                    <p class="text-muted small mb-0" style="font-size: 0.78rem; line-height: 1.35;">
+                        <strong class="text-dark">{{ clima_mes.mes }}:</strong> {{ clima_mes.recomendacion }}
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 

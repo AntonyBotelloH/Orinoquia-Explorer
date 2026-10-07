@@ -144,6 +144,37 @@
                 });
                 modalInstance.show();
             }
+
+            // Soporte dinámico de clima para formularios con fecha de reserva
+            var fechaInput = document.querySelector('input[name="fecha"]');
+            if (fechaInput) {
+                var climaDiv = document.getElementById('adminClimaPreview');
+                if (!climaDiv) {
+                    climaDiv = document.createElement('div');
+                    climaDiv.id = 'adminClimaPreview';
+                    climaDiv.className = 'mt-2';
+                    fechaInput.parentNode.appendChild(climaDiv);
+                }
+
+                function consultarClimaModal() {
+                    var f = fechaInput.value;
+                    if (!f) return;
+                    climaDiv.innerHTML = '<small class="text-muted"><span class="spinner-border spinner-border-sm me-1"></span>Consultando pronóstico...</small>';
+                    fetch('/api/clima-fecha/?fecha=' + f)
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            if (data.valido) {
+                                climaDiv.innerHTML = '<div class="p-2 bg-light rounded-3 border small"><i class="bi ' + data.icono + ' ' + data.icono_color + ' me-1"></i><strong>' + data.temperatura + ' — ' + data.condicion + '</strong><span class="text-muted d-block" style="font-size:0.75rem;">' + data.temporada + ' | Prob. Lluvia: ' + data.probabilidad_lluvia + '</span></div>';
+                            }
+                        })
+                        .catch(function() {});
+                }
+
+                fechaInput.addEventListener('change', consultarClimaModal);
+                if (fechaInput.value) {
+                    consultarClimaModal();
+                }
+            }
         });
     </script>
     {% endif %}

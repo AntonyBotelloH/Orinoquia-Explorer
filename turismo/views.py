@@ -1,10 +1,16 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from decimal import Decimal
 from usuarios.decorators import rol_requerido
 from usuarios.models import Usuario
 from experiencias.models import Categoria, Experiencia
 from reservas.models import Reserva, PolizaSeguro
 from django.db.models import Count, Sum, Q
 from django.utils import timezone
+from .clima import consultar_pronostico_fecha
 import json
 
 def index_usuario(request):
@@ -129,3 +135,58 @@ def dashboard_admin(request):
         }),
     }
     return render(request, "turismo/administracion/index.html", context)
+
+
+def api_clima_fecha(request):
+    """
+    Endpoint JSON que retorna el pronóstico o clima estacional
+    para una fecha seleccionada en los formularios de reserva.
+    """
+    fecha = request.GET.get('fecha')
+    if not fecha:
+        return JsonResponse({'valido': False, 'error': 'No se proporcionó ninguna fecha'}, status=400)
+    data = consultar_pronostico_fecha(fecha)
+    return JsonResponse(data)
+
+
+@login_required
+def solicitar_reserva(request, exp_id):
+    """
+    Permite a los turistas autenticados solicitar y registrar una reserva
+    directamente desde el catálogo de experiencias.
+    """
+    if request.method != 'POST':
+        return redirect('index_usuario')
+
+    experiencia = get_object_or_404(Experiencia, id=exp_id, estado=True)
+    fecha = request.POST.get('fecha')
+    numero_personas = request.POST.get('numero_personas', 1)
+    peticiones = request.POST.get('peticiones_especiales', '').strip()
+
+    if not fecha:
+        messages.error(request, 'Debes seleccionar una fecha para tu reserva.')
+        return redirect(f"{reverse('index_usuario')}#catalogo")
+
+    try:
+        num_p = max(1, int(numero_personas))
+    except (ValueError, TypeError):
+        num_p = 1
+
+    precio_total = Decimal(str(experiencia.precio)) * Decimal(num_p)
+
+    Reserva.objects.create(
+        usuario=request.user,
+        experiencia=experiencia,
+        fecha=fecha,
+        numero_personas=num_p,
+        precio_total=precio_total,
+        estado='PENDIENTE',
+        peticiones_especiales=peticiones
+    )
+
+    messages.success(
+        request,
+        f'¡Excelente! Tu reserva para "{experiencia.nombre}" ha sido solicitada con éxito para el {fecha}. '
+        f'Revisa los detalles en tu perfil.'
+    )
+    return redirect(f"{reverse('perfil')}?layout=user#tab-reservas")
