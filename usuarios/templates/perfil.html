@@ -1,0 +1,361 @@
+{% extends base_template %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+<div class="perfil-container mb-5">
+    <!-- Header de Perfil -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="p-4 p-md-5 text-white position-relative" style="background: linear-gradient(135deg, #024944 0%, #065f46 60%, #0f766e 100%);">
+            <div class="d-flex flex-column flex-md-row align-items-center gap-4">
+                <!-- Avatar Circular con Iniciales -->
+                <div class="avatar-circle d-flex align-items-center justify-content-center text-white fw-bold shadow" 
+                     style="width: 90px; height: 90px; min-width: 90px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); font-size: 2.2rem; border: 4px solid rgba(255,255,255,0.3);">
+                    {% if request.user.first_name and request.user.last_name %}
+                        {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+                    {% else %}
+                        {{ request.user.username|first|upper }}
+                    {% endif %}
+                </div>
+
+                <!-- Info Principal -->
+                <div class="text-center text-md-start flex-grow-1">
+                    <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-start gap-2 mb-2">
+                        <h2 class="fw-bold mb-0 text-white">
+                            {% if request.user.first_name or request.user.last_name %}
+                                {{ request.user.first_name }} {{ request.user.last_name }}
+                            {% else %}
+                                {{ request.user.username }}
+                            {% endif %}
+                        </h2>
+                        
+                        <!-- Badges de Rol -->
+                        {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
+                            <span class="badge bg-danger px-3 py-2 rounded-pill shadow-sm"><i class="bi bi-shield-lock me-1"></i> Administrador</span>
+                        {% elif request.user.rol == 'GUIA' %}
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm"><i class="bi bi-map me-1"></i> Guía Turístico</span>
+                        {% else %}
+                            <span class="badge bg-info text-dark px-3 py-2 rounded-pill shadow-sm"><i class="bi bi-person me-1"></i> Turista</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-3 small text-white-50">
+                        <span><i class="bi bi-envelope me-1"></i>{{ request.user.email|default:"Sin correo" }}</span>
+                        <span><i class="bi bi-person-badge me-1"></i>{{ request.user.get_tipo_documento_display }}: {{ request.user.documento }}</span>
+                        <span><i class="bi bi-calendar-event me-1"></i>Miembro desde: {{ request.user.date_joined|date:"M Y" }}</span>
+                    </div>
+                </div>
+
+                <!-- Resumen rápido de Reservas -->
+                <div class="text-center bg-white bg-opacity-10 p-3 rounded-4 px-4 border border-white border-opacity-10">
+                    <div class="fs-3 fw-bold text-warning mb-0">{{ total_reservas }}</div>
+                    <small class="text-white-50 text-uppercase fw-semibold" style="letter-spacing: 0.5px;">Reservas</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra de Pestañas / Tabs -->
+        <div class="card-body p-0 bg-white border-bottom">
+            <ul class="nav nav-tabs nav-fill border-0 px-3 pt-2" id="perfilTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active py-3 fw-semibold text-dark border-0 border-bottom border-3" id="datos-tab" data-bs-toggle="tab" data-bs-target="#tab-datos" type="button" role="tab" aria-controls="tab-datos" aria-selected="true" style="border-color: #024944 !important;">
+                        <i class="bi bi-person-lines-fill me-2 text-success"></i> Información Personal
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link py-3 fw-semibold text-muted border-0 border-bottom border-3" id="seguridad-tab" data-bs-toggle="tab" data-bs-target="#tab-seguridad" type="button" role="tab" aria-controls="tab-seguridad" aria-selected="false">
+                        <i class="bi bi-shield-lock-fill me-2 text-warning"></i> Seguridad y Clave
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link py-3 fw-semibold text-muted border-0 border-bottom border-3" id="reservas-tab" data-bs-toggle="tab" data-bs-target="#tab-reservas" type="button" role="tab" aria-controls="tab-reservas" aria-selected="false">
+                        <i class="bi bi-calendar-check-fill me-2 text-primary"></i> Mis Reservas
+                        {% if total_reservas > 0 %}
+                            <span class="badge bg-secondary ms-1 rounded-pill">{{ total_reservas }}</span>
+                        {% endif %}
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Contenido de las Pestañas -->
+    <div class="tab-content" id="perfilTabsContent">
+        <!-- TAB 1: INFORMACIÓN PERSONAL -->
+        <div class="tab-pane fade show active" id="tab-datos" role="tabpanel" aria-labelledby="datos-tab">
+            <div class="row g-4">
+                <!-- Columna Izquierda: Datos Inmutables del Sistema -->
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-3" style="color: #024944;">
+                                <i class="bi bi-card-checklist me-2"></i>Identificación
+                            </h5>
+                            <p class="text-muted small mb-4">
+                                Los siguientes datos de identidad fueron verificados al registrarse y no pueden ser modificados.
+                            </p>
+
+                            <div class="mb-3 p-3 bg-light rounded-3 border">
+                                <label class="text-muted small text-uppercase fw-bold d-block mb-1">Tipo de Documento</label>
+                                <div class="fw-semibold text-dark d-flex align-items-center">
+                                    <i class="bi bi-lock-fill text-muted me-2"></i>
+                                    {{ request.user.get_tipo_documento_display }}
+                                </div>
+                            </div>
+
+                            <div class="mb-3 p-3 bg-light rounded-3 border">
+                                <label class="text-muted small text-uppercase fw-bold d-block mb-1">Número de Documento</label>
+                                <div class="fw-semibold text-dark d-flex align-items-center">
+                                    <i class="bi bi-lock-fill text-muted me-2"></i>
+                                    {{ request.user.documento }}
+                                </div>
+                            </div>
+
+                            <div class="mb-3 p-3 bg-light rounded-3 border">
+                                <label class="text-muted small text-uppercase fw-bold d-block mb-1">Usuario del Sistema</label>
+                                <div class="fw-semibold text-dark d-flex align-items-center">
+                                    <i class="bi bi-person-check-fill text-muted me-2"></i>
+                                    {{ request.user.username }}
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-light rounded-3 border">
+                                <label class="text-muted small text-uppercase fw-bold d-block mb-1">Rol Asignado</label>
+                                <div class="fw-semibold text-dark d-flex align-items-center">
+                                    <i class="bi bi-award-fill text-muted me-2"></i>
+                                    {{ request.user.get_rol_display }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Formulario de Actualización -->
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4 p-md-5">
+                            <h5 class="fw-bold mb-3" style="color: #024944;">
+                                <i class="bi bi-pencil-square me-2"></i>Editar Datos Personales
+                            </h5>
+                            <p class="text-muted small mb-4">
+                                Mantén tu información actualizada para recibir confirmaciones de reservas y novedades sobre expediciones.
+                            </p>
+
+                            <form method="post" novalidate>
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="update_profile">
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_perfil.first_name|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_perfil.last_name|as_crispy_field }}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_perfil.email|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        {{ form_perfil.fecha_nacimiento|as_crispy_field }}
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end mt-4 pt-3 border-top gap-2">
+                                    <button type="submit" class="btn btn-primary fw-bold px-4 py-2" style="background-color: #024944; border-color: #024944;">
+                                        <i class="bi bi-check2-circle me-1"></i> Guardar Cambios
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: SEGURIDAD Y CONTRASEÑA -->
+        <div class="tab-pane fade" id="tab-seguridad" role="tabpanel" aria-labelledby="seguridad-tab">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center text-warning" 
+                                     style="width: 50px; height: 50px; background-color: #fef3c7;">
+                                    <i class="bi bi-shield-lock-fill fs-4"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1" style="color: #024944;">Cambiar Contraseña</h5>
+                                    <p class="text-muted small mb-0">Recomendamos usar una contraseña segura que combine letras, números y símbolos.</p>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-warning border-0 rounded-3 d-flex align-items-center mb-4 p-3" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill fs-5 me-3"></i>
+                                <div class="small">
+                                    Al actualizar tu contraseña, tu sesión actual se mantendrá activa automáticamente.
+                                </div>
+                            </div>
+
+                            <form method="post" novalidate>
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="change_password">
+
+                                {{ form_password|crispy }}
+
+                                <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                                    <button type="submit" class="btn btn-warning fw-bold text-dark px-4 py-2">
+                                        <i class="bi bi-key-fill me-1"></i> Actualizar Contraseña
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: MIS RESERVAS -->
+        <div class="tab-pane fade" id="tab-reservas" role="tabpanel" aria-labelledby="reservas-tab">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                        <div>
+                            <h5 class="fw-bold mb-1" style="color: #024944;">
+                                <i class="bi bi-journal-bookmark-fill me-2"></i>Historial de Reservas
+                            </h5>
+                            <p class="text-muted small mb-0">Listado de experiencias y expediciones solicitadas por tu cuenta.</p>
+                        </div>
+                        <a href="{% url 'index_usuario' %}" class="btn btn-sm btn-outline-success fw-bold">
+                            <i class="bi bi-compass me-1"></i> Explorar Experiencias
+                        </a>
+                    </div>
+
+                    {% if mis_reservas %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Experiencia</th>
+                                    <th>Fecha</th>
+                                    <th>Personas</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                    <th class="text-center pe-3">Detalle</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for res in mis_reservas %}
+                                <tr>
+                                    <td class="ps-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            {% if res.experiencia.imagen %}
+                                                <img src="{{ res.experiencia.imagen.url }}" alt="{{ res.experiencia.nombre }}" class="rounded-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="rounded-3 d-flex align-items-center justify-content-center text-muted bg-light" style="width: 50px; height: 50px;">
+                                                    <i class="bi bi-image"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-bold text-dark">{{ res.experiencia.nombre }}</div>
+                                                <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ res.experiencia.ubicacion|default:"Orinoquia" }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">{{ res.fecha|date:"d M, Y" }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            <i class="bi bi-people-fill me-1"></i>{{ res.numero_personas }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">${{ res.precio_total|floatformat:0 }} COP</span>
+                                    </td>
+                                    <td>
+                                        {% if res.estado == 'CONFIRMADA' %}
+                                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Confirmada</span>
+                                        {% elif res.estado == 'PENDIENTE' %}
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-clock-history me-1"></i> Pendiente</span>
+                                        {% elif res.estado == 'CANCELADA' %}
+                                            <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Cancelada</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ res.get_estado_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center pe-3">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseRes{{ res.id }}" aria-expanded="false" title="Ver detalles">
+                                            <i class="bi bi-chevron-down"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Fila colapsable para peticiones especiales o seguro -->
+                                <tr class="collapse bg-light" id="collapseRes{{ res.id }}">
+                                    <td colspan="6" class="p-3">
+                                        <div class="p-3 bg-white rounded-3 border">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2 mb-md-0">
+                                                    <strong>Peticiones Especiales:</strong>
+                                                    <p class="text-muted small mb-0">{{ res.peticiones_especiales|default:"Ninguna especificada." }}</p>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>Póliza de Seguro:</strong>
+                                                    <p class="text-muted small mb-0">
+                                                        {% if res.poliza %}
+                                                            {{ res.poliza.proveedor }} (N° {{ res.poliza.numero_poliza }})
+                                                        {% else %}
+                                                            Póliza estándar del operador incluida.
+                                                        {% endif %}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <!-- Estado vacío si no hay reservas -->
+                    <div class="text-center py-5">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-muted bg-light mx-auto mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-calendar-x fs-1"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1">Aún no tienes reservas</h6>
+                        <p class="text-muted small mb-3">Explora nuestras increíbles experiencias ecológicas, culturales y de aventura en los Llanos Orientales.</p>
+                        <a href="{% url 'index_usuario' %}" class="btn btn-success fw-bold px-4">
+                            <i class="bi bi-compass me-1"></i> Ver Experiencias Disponibles
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script interactivo para recordar tab activo o cambiar bordes al activar tab -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const triggerTabList = [].slice.call(document.querySelectorAll('#perfilTabs button'));
+        triggerTabList.forEach(function (triggerEl) {
+            triggerEl.addEventListener('shown.bs.tab', function (event) {
+                // Limpiar bordes de todos
+                triggerTabList.forEach(t => {
+                    t.style.borderColor = 'transparent';
+                    t.classList.remove('text-dark');
+                    t.classList.add('text-muted');
+                });
+                // Pintar el activo
+                event.target.style.borderColor = '#024944';
+                event.target.classList.remove('text-muted');
+                event.target.classList.add('text-dark');
+            });
+        });
+    });
+</script>
+{% endblock %}

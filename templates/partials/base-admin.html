@@ -34,7 +34,7 @@
                             <i class="bi bi-person-circle fs-3 text-secondary"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser">
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i> Mi Perfil</a></li>
+                            <li><a class="dropdown-item" href="{% url 'perfil' %}?layout=admin"><i class="bi bi-person me-2"></i> Mi Perfil</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: none;">

@@ -118,3 +118,43 @@ class UsuarioEditarForm(forms.ModelForm):
         if commit:
             usuario.save()
         return usuario
+
+
+class PerfilUsuarioForm(forms.ModelForm):
+    class Meta:
+        model = Usuario
+        fields = [
+            'first_name',
+            'last_name',
+            'email',
+            'fecha_nacimiento',
+        ]
+        labels = {
+            'first_name': 'Nombres',
+            'last_name': 'Apellidos',
+            'email': 'Correo Electrónico',
+            'fecha_nacimiento': 'Fecha de Nacimiento',
+        }
+        widgets = {
+            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
+            'first_name': forms.TextInput(attrs={'placeholder': 'Nombres'}),
+            'last_name': forms.TextInput(attrs={'placeholder': 'Apellidos'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'correo@ejemplo.com'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['first_name'].required = True
+        self.fields['last_name'].required = True
+        self.fields['email'].required = True
+        self.fields['email'].help_text = "Se utiliza para iniciar sesión y recibir notificaciones."
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            qs = Usuario.objects.filter(email__iexact=email)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError("Este correo electrónico ya está registrado con otro usuario.")
+        return email
