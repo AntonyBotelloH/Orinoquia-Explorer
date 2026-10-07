@@ -1,0 +1,250 @@
+{% extends 'partials/base-user.html' %}
+{% load static %}
+
+{% block main_layout %}
+<div class="cultura-page py-2">
+    <!-- Hero Header Cultura y Gastronomía -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5 text-white position-relative" 
+         style="background: linear-gradient(135deg, #78350f 0%, #9a3412 45%, #065f46 100%);">
+        <div class="card-body p-4 p-md-5 position-relative" style="z-index: 2;">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+                        <i class="bi bi-music-note-beamed me-1"></i> Tradición, Arpa & Sabores
+                    </span>
+                    <h1 class="display-5 fw-bold mb-3 text-white">
+                        Cultura y Gastronomía Llanera
+                    </h1>
+                    <p class="lead mb-0 text-white-50" style="max-width: 680px;">
+                        Sumérgete en el folclor, los cantos de vaquería reconocidos por la UNESCO, los zapateos del joropo y la tradicional ternera a la llanera asada a leña verde.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
+                    <div class="d-inline-flex gap-2">
+                        <div class="bg-white bg-opacity-10 p-3 rounded-4 backdrop-blur border border-white border-opacity-25 text-center">
+                            <span class="fs-2 fw-bold text-warning d-block">{{ total_cultura }}</span>
+                            <span class="small text-uppercase tracking-wider text-white-50" style="font-size: 0.7rem;">Cultura & Tradición</span>
+                        </div>
+                        <div class="bg-white bg-opacity-10 p-3 rounded-4 backdrop-blur border border-white border-opacity-25 text-center">
+                            <span class="fs-2 fw-bold text-warning d-block">{{ total_gastronomia }}</span>
+                            <span class="small text-uppercase tracking-wider text-white-50" style="font-size: 0.7rem;">Gastronomía</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="position-absolute end-0 bottom-0 opacity-10 p-3 d-none d-md-block" style="font-size: 14rem; line-height: 0; pointer-events: none;">
+            <i class="bi bi-cup-hot"></i>
+        </div>
+    </div>
+
+    <!-- Barra de Filtros y Búsqueda -->
+    <div class="card shadow-sm border-0 mb-5 bg-white rounded-4">
+        <div class="card-body p-4">
+            <form method="GET" action="{% url 'cultura_usuario' %}" class="row g-3 align-items-center mb-3">
+                {% if tipo_actual %}
+                    <input type="hidden" name="tipo" value="{{ tipo_actual }}">
+                {% endif %}
+                <div class="col-12 col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted ps-3">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="q" value="{{ busqueda }}" class="form-control border-start-0 bg-light py-2" placeholder="Buscar por plato típico, danza, mitos o canciones...">
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <button type="submit" class="btn btn-warning w-100 fw-bold text-dark py-2">
+                        <i class="bi bi-filter me-1"></i> Buscar
+                    </button>
+                </div>
+                <div class="col-6 col-md-2">
+                    <a href="{% url 'cultura_usuario' %}" class="btn btn-outline-secondary w-100 py-2">
+                        Limpiar
+                    </a>
+                </div>
+            </form>
+
+            <!-- Pills de Categorías -->
+            <div class="d-flex flex-wrap gap-2 pt-3 border-top">
+                <a href="{% url 'cultura_usuario' %}{% if busqueda %}?q={{ busqueda }}{% endif %}" 
+                   class="btn btn-sm {% if not tipo_actual %}btn-success text-white fw-bold shadow-sm{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 py-1">
+                    Todas las Tradiciones ({{ total_todos }})
+                </a>
+                <a href="{% url 'cultura_usuario' %}?tipo=CULTURA{% if busqueda %}&q={{ busqueda }}{% endif %}" 
+                   class="btn btn-sm {% if tipo_actual == 'CULTURA' %}btn-success text-white fw-bold shadow-sm{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 py-1">
+                    <i class="bi bi-music-note-beamed me-1"></i> Cultura Llanera ({{ total_cultura }})
+                </a>
+                <a href="{% url 'cultura_usuario' %}?tipo=GASTRONOMIA{% if busqueda %}&q={{ busqueda }}{% endif %}" 
+                   class="btn btn-sm {% if tipo_actual == 'GASTRONOMIA' %}btn-success text-white fw-bold shadow-sm{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 py-1">
+                    <i class="bi bi-cup-hot-fill me-1"></i> Gastronomía Típica ({{ total_gastronomia }})
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtro Activo Feedback -->
+    {% if busqueda or tipo_actual %}
+    <div class="alert alert-light border d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-3 shadow-sm">
+        <span class="small text-muted">
+            Mostrando <strong>{{ total_encontrados }}</strong> artículo{{ total_encontrados|pluralize:"s" }}
+            {% if tipo_actual %}de <strong>{{ tipo_actual|title }}</strong>{% endif %}
+            {% if busqueda %}para "<em>{{ busqueda }}</em>"{% endif %}
+        </span>
+        <a href="{% url 'cultura_usuario' %}" class="btn btn-sm btn-link text-decoration-none text-danger py-0">
+            <i class="bi bi-x-circle me-1"></i> Quitar filtros
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Rejilla de Artículos de Cultura y Gastronomía -->
+    {% if articulos %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+        {% for item in articulos %}
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden cultura-card d-flex flex-column"
+                 style="transition: transform 0.25s ease, box-shadow 0.25s ease;">
+                
+                <!-- Imagen con overlay badges -->
+                <div class="position-relative" style="height: 220px; background-color: #78350f; overflow: hidden;">
+                    {% if item.imagen %}
+                        <img src="{{ item.imagen.url }}" alt="{{ item.titulo }}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.4s ease;">
+                    {% else %}
+                        <img src="{% static 'images/banner.webp' %}" alt="{{ item.titulo }}" class="w-100 h-100" style="object-fit: cover;">
+                    {% endif %}
+
+                    <!-- Badge Tipo -->
+                    {% if item.tipo == 'GASTRONOMIA' %}
+                    <span class="badge bg-warning text-dark fw-bold position-absolute top-0 start-0 m-3 shadow-sm">
+                        <i class="bi bi-cup-hot-fill me-1"></i>Gastronomía
+                    </span>
+                    {% else %}
+                    <span class="badge bg-success text-white fw-bold position-absolute top-0 start-0 m-3 shadow-sm">
+                        <i class="bi bi-music-note-beamed me-1"></i>Cultura & Folclor
+                    </span>
+                    {% endif %}
+
+                    <!-- Badge Destacado -->
+                    {% if item.destacado %}
+                    <span class="badge bg-danger text-white fw-bold position-absolute top-0 end-0 m-3 shadow-sm">
+                        <i class="bi bi-heart-fill me-1"></i>Imperdible
+                    </span>
+                    {% endif %}
+
+                    <!-- Origen / Región -->
+                    <span class="badge bg-dark bg-opacity-75 text-white position-absolute bottom-0 start-0 m-3 shadow-sm backdrop-blur" style="font-size: 0.75rem;">
+                        <i class="bi bi-geo-alt-fill text-warning me-1"></i>{{ item.origen_region }}
+                    </span>
+                </div>
+
+                <!-- Contenido de la Tarjeta -->
+                <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                    <h4 class="card-title fw-bold mb-2 text-dark" style="font-family: 'Montserrat', sans-serif;">
+                        {{ item.titulo }}
+                    </h4>
+
+                    {% if item.subtitulo %}
+                    <h6 class="text-success fw-semibold mb-3 small" style="font-size: 0.85rem;">
+                        {{ item.subtitulo }}
+                    </h6>
+                    {% endif %}
+                    
+                    <p class="card-text text-muted small mb-4 flex-grow-1" style="line-height: 1.6;">
+                        {{ item.descripcion|truncatewords:24 }}
+                    </p>
+
+                    <div class="pt-3 border-top d-flex justify-content-between align-items-center mt-auto">
+                        <button type="button" class="btn btn-outline-success btn-sm fw-bold px-3" 
+                                data-bs-toggle="modal" data-bs-target="#modalCultura{{ item.id }}">
+                            <i class="bi bi-book me-1"></i> Leer Historia Completa
+                        </button>
+                        <a href="{% url 'index_usuario' %}?q={{ item.titulo }}#catalogo" 
+                           class="btn btn-warning btn-sm fw-bold text-dark px-3 shadow-sm" title="Experiencias relacionadas">
+                            <i class="bi bi-compass me-1"></i> Vivencias
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Detalle Cultural -->
+        <div class="modal fade" id="modalCultura{{ item.id }}" tabindex="-1" aria-labelledby="modalCulturaLabel{{ item.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+                    <div class="position-relative" style="height: 280px; background-color: #78350f;">
+                        {% if item.imagen %}
+                            <img src="{{ item.imagen.url }}" alt="{{ item.titulo }}" class="w-100 h-100" style="object-fit: cover;">
+                        {% else %}
+                            <img src="{% static 'images/banner.webp' %}" alt="{{ item.titulo }}" class="w-100 h-100" style="object-fit: cover;">
+                        {% endif %}
+                        <div class="position-absolute bottom-0 start-0 w-100 p-4 text-white" 
+                             style="background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 100%);">
+                            <div class="d-flex gap-2 mb-2">
+                                <span class="badge {% if item.tipo == 'GASTRONOMIA' %}bg-warning text-dark{% else %}bg-success{% endif %} fw-bold">
+                                    {{ item.get_tipo_display }}
+                                </span>
+                                <span class="badge bg-light text-dark">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ item.origen_region }}
+                                </span>
+                            </div>
+                            <h3 class="modal-title fw-bold text-white mb-0" id="modalCulturaLabel{{ item.id }}">{{ item.titulo }}</h3>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body p-4">
+                        {% if item.subtitulo %}
+                        <div class="alert alert-warning border-0 bg-opacity-25 bg-warning p-3 rounded-3 mb-4">
+                            <p class="mb-0 fw-semibold text-dark">
+                                <i class="bi bi-quote me-1 text-warning fs-5"></i>{{ item.subtitulo }}
+                            </p>
+                        </div>
+                        {% endif %}
+
+                        <h5 class="fw-bold text-dark mb-3">
+                            <i class="bi bi-journal-richtext text-success me-2"></i>Historia y Tradición
+                        </h5>
+                        <p class="text-muted" style="line-height: 1.8; font-size: 1.02rem;">
+                            {{ item.descripcion }}
+                        </p>
+
+                        <div class="p-3 bg-light rounded-3 border mt-4">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <i class="bi bi-shield-check text-success fs-2"></i>
+                                </div>
+                                <div class="col">
+                                    <h6 class="fw-bold mb-1">Patrimonio Vivo del Llano</h6>
+                                    <p class="text-muted small mb-0">Esta tradición forma parte de la identidad comunitaria e inmaterial protegida por la gente llanera.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-top p-3 px-4 bg-light d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cerrar</button>
+                        <a href="{% url 'contacto_usuario' %}" class="btn btn-success fw-bold px-4 shadow-sm">
+                            <i class="bi bi-chat-dots me-1"></i> Consultar Ruta Cultural
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm rounded-4 text-center p-5 mb-5 bg-white">
+        <div class="display-1 text-muted mb-3 opacity-50">
+            <i class="bi bi-music-note-beamed"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-2">No se encontraron artículos</h3>
+        <p class="text-muted mb-4">No hay publicaciones disponibles para los filtros seleccionados.</p>
+        <div>
+            <a href="{% url 'cultura_usuario' %}" class="btn btn-success fw-bold px-4 py-2">
+                Ver Todas las Tradiciones
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock main_layout %}

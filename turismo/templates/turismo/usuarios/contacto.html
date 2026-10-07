@@ -1,0 +1,221 @@
+{% extends 'partials/base-user.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block main_layout %}
+<div class="contacto-page py-2">
+    <!-- Hero Header Contacto -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5 text-white position-relative" 
+         style="background: linear-gradient(135deg, #024944 0%, #065f46 50%, #0d9488 100%);">
+        <div class="card-body p-4 p-md-5 position-relative" style="z-index: 2;">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+                        <i class="bi bi-chat-heart-fill me-1"></i> Estamos Para Servirte
+                    </span>
+                    <h1 class="display-5 fw-bold mb-3 text-white">
+                        Contáctanos y Diseña tu Expedición
+                    </h1>
+                    <p class="lead mb-0 text-white-50" style="max-width: 650px;">
+                        ¿Tienes dudas sobre los safaris, temporadas del clima, reservas privadas o rutas por el llano? Nuestro equipo de expertos locales te guiará paso a paso.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
+                    <div class="bg-white bg-opacity-10 p-3 rounded-4 backdrop-blur border border-white border-opacity-25 d-inline-block text-center">
+                        <i class="bi bi-headset fs-1 text-warning d-block mb-1"></i>
+                        <span class="fw-bold d-block text-white">Atención 7 Días</span>
+                        <span class="small text-white-50">Respuesta en menos de 24h</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="position-absolute end-0 bottom-0 opacity-10 p-3 d-none d-md-block" style="font-size: 14rem; line-height: 0; pointer-events: none;">
+            <i class="bi bi-envelope-paper"></i>
+        </div>
+    </div>
+
+    <!-- Sección de Formulario e Información -->
+    <div class="row g-4 mb-5">
+        <!-- Columna Izquierda: Formulario de Contacto -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+                <div class="card-body p-4 p-md-5">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="p-3 rounded-circle bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-envelope-plus-fill fs-3"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-1 text-dark" style="font-family: 'Montserrat', sans-serif;">Envíanos un Mensaje</h3>
+                            <p class="text-muted small mb-0">Completa tus datos y te responderemos a la brevedad posible</p>
+                        </div>
+                    </div>
+
+                    <form method="POST" action="{% url 'contacto_usuario' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-secondary">
+                                <i class="bi bi-person me-1"></i> Nombre Completo <span class="text-danger">*</span>
+                            </label>
+                            {{ form.nombre }}
+                            {% if form.nombre.errors %}
+                                <div class="text-danger small mt-1">{{ form.nombre.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small text-secondary">
+                                    <i class="bi bi-envelope me-1"></i> Correo Electrónico <span class="text-danger">*</span>
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small text-secondary">
+                                    <i class="bi bi-whatsapp me-1"></i> Teléfono o WhatsApp
+                                </label>
+                                {{ form.telefono }}
+                                {% if form.telefono.errors %}
+                                    <div class="text-danger small mt-1">{{ form.telefono.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-secondary">
+                                <i class="bi bi-chat-left-dots me-1"></i> Asunto <span class="text-danger">*</span>
+                            </label>
+                            {{ form.asunto }}
+                            {% if form.asunto.errors %}
+                                <div class="text-danger small mt-1">{{ form.asunto.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-secondary">
+                                <i class="bi bi-pencil-square me-1"></i> Mensaje o Consulta Detallada <span class="text-danger">*</span>
+                            </label>
+                            {{ form.mensaje }}
+                            {% if form.mensaje.errors %}
+                                <div class="text-danger small mt-1">{{ form.mensaje.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-warning w-100 py-3 fw-bold text-dark shadow-sm">
+                            <i class="bi bi-send-fill me-2"></i> Enviar Consulta
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Canales y Preguntas Frecuentes -->
+        <div class="col-lg-5">
+            <!-- Canales Directos -->
+            <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-dark mb-4">
+                        <i class="bi bi-geo-alt-fill text-danger me-2"></i>Canales de Atención
+                    </h5>
+
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex align-items-start gap-3 mb-3 pb-3 border-bottom">
+                            <div class="p-2 rounded-3 bg-light text-success">
+                                <i class="bi bi-pin-map fs-4"></i>
+                            </div>
+                            <div>
+                                <strong class="d-block text-dark small">Base de Operaciones:</strong>
+                                <span class="text-muted small">Yopal, Casanare y Villavicencio, Meta — Colombia</span>
+                            </div>
+                        </li>
+
+                        <li class="d-flex align-items-start gap-3 mb-3 pb-3 border-bottom">
+                            <div class="p-2 rounded-3 bg-light text-success">
+                                <i class="bi bi-envelope fs-4"></i>
+                            </div>
+                            <div>
+                                <strong class="d-block text-dark small">Correos Electrónicos:</strong>
+                                <span class="text-muted small">info@orinoquiaexplorer.com</span><br>
+                                <span class="text-muted small">reservas@orinoquiaexplorer.com</span>
+                            </div>
+                        </li>
+
+                        <li class="d-flex align-items-start gap-3 mb-3 pb-3 border-bottom">
+                            <div class="p-2 rounded-3 bg-light text-success">
+                                <i class="bi bi-whatsapp fs-4"></i>
+                            </div>
+                            <div>
+                                <strong class="d-block text-dark small">Línea Móvil y WhatsApp:</strong>
+                                <span class="text-muted small">+57 300 123 4567 / +57 312 987 6543</span>
+                            </div>
+                        </li>
+
+                        <li class="d-flex align-items-start gap-3 mb-0">
+                            <div class="p-2 rounded-3 bg-light text-success">
+                                <i class="bi bi-clock-history fs-4"></i>
+                            </div>
+                            <div>
+                                <strong class="d-block text-dark small">Horarios de Asesoría:</strong>
+                                <span class="text-muted small">Lunes a Sábado: 7:00 AM – 7:00 PM</span><br>
+                                <span class="text-muted small">Domingos y Festivos: 8:00 AM – 4:00 PM</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Preguntas Frecuentes Acordeón -->
+            <div class="card border-0 shadow-sm rounded-4 bg-white">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-dark mb-3">
+                        <i class="bi bi-question-circle-fill text-warning me-2"></i>Preguntas Frecuentes
+                    </h5>
+
+                    <div class="accordion accordion-flush" id="faqAccordion">
+                        <div class="accordion-item border-bottom">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button collapsed px-0 fw-semibold text-dark small" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                    ¿Cuál es la mejor temporada para ir a Caño Cristales?
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body px-0 text-muted small">
+                                    La temporada oficial abre entre junio y noviembre, cuando el caudal del río permite a la <em>Macarenia clavigera</em> mostrar su máximo esplendor de colores.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item border-bottom">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed px-0 fw-semibold text-dark small" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                    ¿Se requiere vacuna de fiebre amarilla?
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body px-0 text-muted small">
+                                    Sí, para parques nacionales y reservas del Casanare, Meta, Guaviare y Vichada es altamente recomendado portar el carné de vacunación contra la fiebre amarilla aplicado con al menos 10 días de anticipación.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed px-0 fw-semibold text-dark small" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                    ¿Todas las actividades incluyen póliza de seguro?
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body px-0 text-muted small">
+                                    ¡Absolutamente! Todas nuestras reservas se encuentran amparadas por pólizas de asistencia médica y rescate contra todo riesgo, garantizadas por guías certificados.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_layout %}

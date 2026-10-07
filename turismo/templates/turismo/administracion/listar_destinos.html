@@ -1,0 +1,99 @@
+{% extends 'partials/base-admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1" style="color: var(--brand-primary);">{{ titulo|default:"Gestión de Destinos" }}</h2>
+        <p class="text-muted small mb-0">Administra los atractivos naturales, municipios y departamentos de la Orinoquía</p>
+    </div>
+    {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
+    <a href="{% url 'destino_crear' %}" class="btn btn-primary fw-bold shadow-sm">
+        <i class="bi bi-geo-alt-fill me-2"></i> Nuevo Destino
+    </a>
+    {% endif %}
+</div>
+
+<div class="card shadow-sm border-0 rounded-3">
+    <div class="card-body p-3">
+        <div class="table-responsive">
+            <table id="tablaDestinos" class="table table-hover align-middle mb-0 w-100">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3" style="width: 70px;">Foto</th>
+                        <th>Nombre</th>
+                        <th>Departamento</th>
+                        <th>Clima Promedio</th>
+                        <th class="text-center">Destacado</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center pe-3 no-sort">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for destino in destinos %}
+                    <tr>
+                        <td class="ps-3">
+                            {% if destino.imagen %}
+                                <img src="{{ destino.imagen.url }}" alt="{{ destino.nombre }}" class="rounded shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted border" style="width: 50px; height: 50px;">
+                                    <i class="bi bi-image"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong style="color: var(--brand-secondary);">{{ destino.nombre }}</strong>
+                            <small class="text-muted d-block" style="font-size: 0.78rem;">{{ destino.atractivos|truncatewords:6 }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border fw-semibold">
+                                <i class="bi bi-pin-map text-danger me-1"></i>{{ destino.get_departamento_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="small text-muted"><i class="bi bi-thermometer-half text-warning me-1"></i>{{ destino.clima_promedio }}</span>
+                        </td>
+                        <td class="text-center">
+                            {% if destino.destacado %}
+                                <span class="badge bg-warning text-dark"><i class="bi bi-star-fill me-1"></i>Sí</span>
+                            {% else %}
+                                <span class="badge bg-light text-muted border">No</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if destino.estado %}
+                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Activo</span>
+                            {% else %}
+                                <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center pe-3">
+                            <div class="d-flex justify-content-center gap-1">
+                                <!-- Todos pueden visualizar -->
+                                <a href="{% url 'destino_ver' destino.id %}" class="btn btn-sm btn-outline-info" title="Visualizar">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                
+                                <!-- Solo ADMIN puede editar y eliminar -->
+                                {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
+                                <a href="{% url 'destino_editar' destino.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <a href="{% url 'destino_eliminar' destino.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block script %}
+<script src="{% static 'js/DataTables/tconf/tDestinos-config.js' %}"></script>
+{% endblock script %}

@@ -24,6 +24,7 @@
     {% endblock header %}
     
     <main class="container my-5">
+        {% block main_layout %}
         <div class="row">
             <div class="col-lg-8 mb-4">
                 {% block content %}
@@ -33,6 +34,7 @@
                 {% include 'partials/aside.html' %}
             </div>
         </div>
+        {% endblock main_layout %}
     </main>
 
     {% include 'partials/footer.html' %}

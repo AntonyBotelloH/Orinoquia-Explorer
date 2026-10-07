@@ -1,0 +1,244 @@
+{% extends 'partials/base-user.html' %}
+{% load static %}
+
+{% block main_layout %}
+<div class="destinos-page py-2">
+    <!-- Hero Header de Destinos -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5 text-white position-relative" 
+         style="background: linear-gradient(135deg, #024944 0%, #065f46 50%, #0d9488 100%);">
+        <div class="card-body p-4 p-md-5 position-relative" style="z-index: 2;">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+                        <i class="bi bi-geo-alt-fill me-1"></i> Rutas & Ecosistemas
+                    </span>
+                    <h1 class="display-5 fw-bold mb-3 text-white">
+                        Destinos Mágicos de la Orinoquía
+                    </h1>
+                    <p class="lead mb-0 text-white-50" style="max-width: 650px;">
+                        Descubre ríos multicolores, cañones milenarios, sabanas infinitas y reservas ecológicas vírgenes a lo largo de Meta, Casanare, Arauca, Vichada y Guaviare.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
+                    <div class="bg-white bg-opacity-10 p-3 rounded-4 backdrop-blur border border-white border-opacity-25 d-inline-block text-center">
+                        <span class="fs-1 fw-bold text-warning d-block">{{ total_destinos }}</span>
+                        <span class="small text-uppercase tracking-wider text-white-50">Destinos Emblemáticos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="position-absolute end-0 bottom-0 opacity-10 p-3 d-none d-md-block" style="font-size: 14rem; line-height: 0; pointer-events: none;">
+            <i class="bi bi-compass"></i>
+        </div>
+    </div>
+
+    <!-- Filtros de Departamento y Buscador -->
+    <div class="card shadow-sm border-0 mb-5 bg-white rounded-4">
+        <div class="card-body p-4">
+            <form method="GET" action="{% url 'destinos_usuario' %}" class="row g-3 align-items-center mb-3">
+                {% if departamento_actual %}
+                    <input type="hidden" name="depto" value="{{ departamento_actual }}">
+                {% endif %}
+                <div class="col-12 col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted ps-3">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="q" value="{{ busqueda }}" class="form-control border-start-0 bg-light py-2" placeholder="Buscar por destino, cascada, parque o municipio...">
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <button type="submit" class="btn btn-warning w-100 fw-bold text-dark py-2">
+                        <i class="bi bi-filter me-1"></i> Buscar
+                    </button>
+                </div>
+                <div class="col-6 col-md-2">
+                    <a href="{% url 'destinos_usuario' %}" class="btn btn-outline-secondary w-100 py-2">
+                        Limpiar
+                    </a>
+                </div>
+            </form>
+
+            <!-- Pills de Departamentos -->
+            <div class="d-flex flex-wrap gap-2 pt-3 border-top">
+                <a href="{% url 'destinos_usuario' %}{% if busqueda %}?q={{ busqueda }}{% endif %}" 
+                   class="btn btn-sm {% if not departamento_actual %}btn-success text-white fw-bold shadow-sm{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 py-1">
+                    Todos los Llanos ({{ total_destinos }})
+                </a>
+                {% for code, label in departamentos %}
+                    <a href="{% url 'destinos_usuario' %}?depto={{ code }}{% if busqueda %}&q={{ busqueda }}{% endif %}" 
+                       class="btn btn-sm {% if departamento_actual == code %}btn-success text-white fw-bold shadow-sm{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 py-1">
+                        {{ label }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificación de Búsqueda Activa -->
+    {% if busqueda or departamento_actual %}
+    <div class="alert alert-light border d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-3 shadow-sm">
+        <span class="small text-muted">
+            Mostrando <strong>{{ total_encontrados }}</strong> destino{{ total_encontrados|pluralize:"s" }}
+            {% if departamento_actual %}en <strong>{{ departamento_actual }}</strong>{% endif %}
+            {% if busqueda %}para "<em>{{ busqueda }}</em>"{% endif %}
+        </span>
+        <a href="{% url 'destinos_usuario' %}" class="btn btn-sm btn-link text-decoration-none text-danger py-0">
+            <i class="bi bi-x-circle me-1"></i> Quitar filtros
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Rejilla de Destinos -->
+    {% if destinos %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+        {% for destino in destinos %}
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden destino-card d-flex flex-column" 
+                 style="transition: transform 0.25s ease, box-shadow 0.25s ease;">
+                
+                <!-- Imagen con overlay badges -->
+                <div class="position-relative" style="height: 220px; background-color: #024944; overflow: hidden;">
+                    {% if destino.imagen %}
+                        <img src="{{ destino.imagen.url }}" alt="{{ destino.nombre }}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.4s ease;">
+                    {% else %}
+                        <img src="{% static 'images/banner.webp' %}" alt="{{ destino.nombre }}" class="w-100 h-100" style="object-fit: cover;">
+                    {% endif %}
+                    
+                    <!-- Badge Departamento -->
+                    <span class="badge bg-dark bg-opacity-75 text-white position-absolute top-0 start-0 m-3 shadow-sm backdrop-blur">
+                        <i class="bi bi-geo-alt-fill text-warning me-1"></i>{{ destino.get_departamento_display }}
+                    </span>
+
+                    <!-- Badge Destacado -->
+                    {% if destino.destacado %}
+                    <span class="badge bg-warning text-dark fw-bold position-absolute top-0 end-0 m-3 shadow-sm">
+                        <i class="bi bi-star-fill me-1"></i>Destacado
+                    </span>
+                    {% endif %}
+
+                    <!-- Clima badge abajo -->
+                    <span class="badge bg-light text-dark position-absolute bottom-0 start-0 m-3 shadow-sm" style="font-size: 0.75rem;">
+                        <i class="bi bi-thermometer-sun text-danger me-1"></i>{{ destino.clima_promedio }}
+                    </span>
+                </div>
+
+                <!-- Contenido de la Tarjeta -->
+                <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                    <h4 class="card-title fw-bold mb-2 text-dark" style="font-family: 'Montserrat', sans-serif;">
+                        {{ destino.nombre }}
+                    </h4>
+                    
+                    <p class="card-text text-muted small mb-3 flex-grow-1" style="line-height: 1.6;">
+                        {{ destino.descripcion|truncatewords:22 }}
+                    </p>
+
+                    <!-- Atractivos Principales -->
+                    <div class="p-2 bg-light rounded-3 mb-3 border">
+                        <small class="text-muted d-block fw-bold mb-1" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <i class="bi bi-stars text-warning me-1"></i>Atractivos Clave:
+                        </small>
+                        <p class="mb-0 text-dark small" style="font-size: 0.78rem;">
+                            {{ destino.atractivos|truncatewords:10 }}
+                        </p>
+                    </div>
+
+                    <div class="pt-2 border-top d-flex justify-content-between align-items-center mt-auto">
+                        <button type="button" class="btn btn-outline-success btn-sm fw-bold px-3" 
+                                data-bs-toggle="modal" data-bs-target="#modalDestino{{ destino.id }}">
+                            <i class="bi bi-info-circle me-1"></i> Ver Guía Completa
+                        </button>
+                        <a href="{% url 'index_usuario' %}?q={{ destino.nombre }}#catalogo" 
+                           class="btn btn-warning btn-sm fw-bold text-dark px-3 shadow-sm" title="Buscar experiencias en este destino">
+                            <i class="bi bi-compass me-1"></i> Vivencias
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Detalle del Destino -->
+        <div class="modal fade" id="modalDestino{{ destino.id }}" tabindex="-1" aria-labelledby="modalDestinoLabel{{ destino.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+                    <div class="position-relative" style="height: 260px; background-color: #024944;">
+                        {% if destino.imagen %}
+                            <img src="{{ destino.imagen.url }}" alt="{{ destino.nombre }}" class="w-100 h-100" style="object-fit: cover;">
+                        {% else %}
+                            <img src="{% static 'images/banner.webp' %}" alt="{{ destino.nombre }}" class="w-100 h-100" style="object-fit: cover;">
+                        {% endif %}
+                        <div class="position-absolute bottom-0 start-0 w-100 p-4 text-white" 
+                             style="background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);">
+                            <span class="badge bg-warning text-dark fw-bold mb-2">
+                                <i class="bi bi-geo-alt-fill me-1"></i>{{ destino.get_departamento_display }}
+                            </span>
+                            <h3 class="modal-title fw-bold text-white mb-0" id="modalDestinoLabel{{ destino.id }}">{{ destino.nombre }}</h3>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body p-4">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded-3 border h-100">
+                                    <h6 class="fw-bold text-success mb-1">
+                                        <i class="bi bi-thermometer-sun text-warning me-2"></i>Clima Promedio
+                                    </h6>
+                                    <p class="mb-0 text-muted small">{{ destino.clima_promedio }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded-3 border h-100">
+                                    <h6 class="fw-bold text-success mb-1">
+                                        <i class="bi bi-pin-map-fill text-danger me-2"></i>Ubicación Geográfica
+                                    </h6>
+                                    <p class="mb-0 text-muted small">Departamento de {{ destino.get_departamento_display }}, Orinoquía Colombiana</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="fw-bold text-dark mb-2">Acerca de este Destino</h5>
+                        <p class="text-muted" style="line-height: 1.7;">{{ destino.descripcion }}</p>
+
+                        <h5 class="fw-bold text-dark mt-4 mb-2">
+                            <i class="bi bi-stars text-warning me-2"></i>Atractivos y Actividades Recomendadas
+                        </h5>
+                        <p class="text-muted" style="line-height: 1.7;">{{ destino.atractivos }}</p>
+
+                        {% if destino.como_llegar %}
+                        <div class="alert alert-success border-0 bg-opacity-10 bg-success p-3 rounded-3 mt-4">
+                            <h6 class="fw-bold text-success mb-2">
+                                <i class="bi bi-signpost-2-fill me-2"></i>¿Cómo llegar?
+                            </h6>
+                            <p class="mb-0 small text-dark" style="line-height: 1.6;">{{ destino.como_llegar }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="modal-footer border-top p-3 px-4 bg-light d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cerrar</button>
+                        <a href="{% url 'index_usuario' %}?q={{ destino.nombre }}#catalogo" class="btn btn-warning fw-bold text-dark px-4 shadow-sm">
+                            <i class="bi bi-compass me-1"></i> Explorar Experiencias en este Destino
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm rounded-4 text-center p-5 mb-5 bg-white">
+        <div class="display-1 text-muted mb-3 opacity-50">
+            <i class="bi bi-geo-alt"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-2">No se encontraron destinos</h3>
+        <p class="text-muted mb-4">No hay destinos registrados para los filtros o búsqueda especificada.</p>
+        <div>
+            <a href="{% url 'destinos_usuario' %}" class="btn btn-success fw-bold px-4 py-2">
+                Ver Todos los Destinos
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock main_layout %}

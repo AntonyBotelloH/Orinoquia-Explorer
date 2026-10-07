@@ -16,19 +16,19 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="{% url 'index_usuario' %}">Inicio</a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'index_usuario' %}active{% endif %}" href="{% url 'index_usuario' %}">Inicio</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Destinos</a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'destinos_usuario' %}active{% endif %}" href="{% url 'destinos_usuario' %}">Destinos</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'index_usuario' %}#catalogo">Experiencias</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Cultura y Gastronomía</a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'cultura_usuario' %}active{% endif %}" href="{% url 'cultura_usuario' %}">Cultura y Gastronomía</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Contacto</a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'contacto_usuario' %}active{% endif %}" href="{% url 'contacto_usuario' %}">Contacto</a>
                 </li>
             </ul>
             
