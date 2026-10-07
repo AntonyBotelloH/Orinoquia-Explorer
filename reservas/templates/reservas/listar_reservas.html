@@ -11,7 +11,7 @@
     </div>
 
     <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
+        <div class="card-body p-3">
             <div class="table-responsive">
                 <table id="tablaReservas" class="table table-hover align-middle mb-0 w-100 nowrap">
                     <thead class="table-light">
@@ -22,7 +22,7 @@
                             <th>Personas</th>
                             <th>Total</th>
                             <th>Estado</th>
-                            <th class="text-center pe-4">Acciones</th>
+                            <th class="text-center pe-4 no-sort">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -44,6 +44,12 @@
                             </td>
                             <td class="text-center pe-4">
                                 <div class="d-flex justify-content-center gap-1">
+                                    <!-- Todos pueden visualizar -->
+                                    <a href="{% url 'reserva_ver' reserva.id %}" class="btn btn-sm btn-outline-info" title="Visualizar">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    
+                                    <!-- Solo ADMIN puede editar y eliminar -->
                                     {% if request.user.rol == 'ADMIN' or request.user.is_superuser %}
                                     <a href="{% url 'reserva_editar' reserva.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
                                         <i class="bi bi-pencil-square"></i>
@@ -55,13 +61,6 @@
                                 </div>
                             </td>
                         </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="7" class="text-center text-muted py-5">
-                                <i class="bi bi-calendar-x fs-1 d-block mb-3 text-light"></i>
-                                No hay reservas registradas.
-                            </td>
-                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -70,4 +69,5 @@
     </div>
 {% endblock content %}
 {% block script %}
+<script src="{% static 'js/DataTables/tconf/tReservas-config.js' %}"></script>
 {% endblock script %}

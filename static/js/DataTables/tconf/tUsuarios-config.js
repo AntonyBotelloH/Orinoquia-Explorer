@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    $('#tablaCategorias').DataTable({
+    $('#tablaUsuarios').DataTable({
         responsive: true,
         dom: "<'row mb-3 align-items-center'<'col-sm-12 col-md-6 d-flex gap-2'B><'col-sm-12 col-md-6 d-flex justify-content-md-end mt-2 mt-md-0'f>>" +
              "<'row'<'col-sm-12'tr>>" +
@@ -26,10 +26,10 @@ $(document).ready(function() {
             processing: "Procesando...",
             lengthMenu: "Mostrar _MENU_ registros",
             zeroRecords: "No se encontraron resultados",
-            emptyTable: "No hay categorías registradas",
-            info: "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ categorías",
-            infoEmpty: "Mostrando 0 de 0 categorías",
-            infoFiltered: "(filtrado de un total de _MAX_ categorías)",
+            emptyTable: "No hay usuarios registrados",
+            info: "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ usuarios",
+            infoEmpty: "Mostrando 0 de 0 usuarios",
+            infoFiltered: "(filtrado de un total de _MAX_ usuarios)",
             search: "Buscar:",
             paginate: {
                 first: "Primero",

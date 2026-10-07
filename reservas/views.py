@@ -17,6 +17,28 @@ def listar_reserva(request):
     }
     return render(request, 'reservas/listar_reservas.html', context)
 
+@rol_requerido('ADMIN', 'GUIA')
+def ver_reserva(request, id):
+    reserva = get_object_or_404(Reserva, id=id)
+    reservas = Reserva.objects.all()
+    detalles = [
+        ('Turista / Usuario', f"{reserva.usuario.first_name} {reserva.usuario.last_name} ({reserva.usuario.documento})"),
+        ('Experiencia', reserva.experiencia.nombre),
+        ('Fecha', reserva.fecha.strftime('%d/%m/%Y') if reserva.fecha else 'N/A'),
+        ('Número de Personas', reserva.numero_personas),
+        ('Precio Total', f"${reserva.precio_total:,}"),
+        ('Estado', reserva.get_estado_display()),
+    ]
+    context = {
+        'reservas': reservas,
+        'titulo': 'Reserva',
+        'objeto': reserva,
+        'detalles': detalles,
+        'accion': 'R',
+        'url_listar': reverse('reserva_listar'),
+    }
+    return render(request, 'reservas/listar_reservas.html', context)
+
 @rol_requerido('ADMIN')
 def crear_reserva(request):
     titulo = 'Reserva'
@@ -98,6 +120,25 @@ def listar_poliza(request):
     context = {
         'polizas': polizas,
         'titulo': titulo,
+    }
+    return render(request, 'reservas/listar_polizas.html', context)
+
+@rol_requerido('ADMIN', 'GUIA')
+def ver_poliza(request, id):
+    poliza = get_object_or_404(PolizaSeguro, id=id)
+    polizas = PolizaSeguro.objects.all().order_by('fecha_expiracion')
+    detalles = [
+        ('Proveedor', poliza.proveedor),
+        ('Número de Póliza', poliza.numero_poliza),
+        ('Fecha de Expiración', poliza.fecha_expiracion.strftime('%d/%m/%Y') if poliza.fecha_expiracion else 'N/A'),
+    ]
+    context = {
+        'polizas': polizas,
+        'titulo': 'Póliza de Seguro',
+        'objeto': poliza,
+        'detalles': detalles,
+        'accion': 'R',
+        'url_listar': reverse('poliza_listar'),
     }
     return render(request, 'reservas/listar_polizas.html', context)
 

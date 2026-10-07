@@ -19,6 +19,25 @@ def listar_categoria(request):
     }
     return render(request, 'categorias/listar_categorias.html', context)
 
+@rol_requerido('ADMIN', 'GUIA')
+def ver_categoria(request, id):
+    categoria = get_object_or_404(Categoria, id=id)
+    categorias = Categoria.objects.all()
+    detalles = [
+        ('Nombre', categoria.nombre),
+        ('Descripción', categoria.descripcion),
+        ('Estado', 'Activo' if categoria.estado else 'Inactivo'),
+    ]
+    context = {
+        'categorias': categorias,
+        'titulo': 'Categoría',
+        'objeto': categoria,
+        'detalles': detalles,
+        'accion': 'R',
+        'url_listar': reverse('categoria_listar'),
+    }
+    return render(request, 'categorias/listar_categorias.html', context)
+
 @rol_requerido('ADMIN')
 def crear_categoria(request):
     titulo = 'Categoría'
@@ -100,6 +119,28 @@ def listar_experiencia(request):
     context = {
         'experiencias': experiencias,
         'titulo': titulo,
+    }
+    return render(request, 'experiencias/listar_experiencias.html', context)
+
+@rol_requerido('ADMIN', 'GUIA')
+def ver_experiencia(request, id):
+    experiencia = get_object_or_404(Experiencia, id=id)
+    experiencias = Experiencia.objects.all()
+    detalles = [
+        ('Nombre', experiencia.nombre),
+        ('Descripción', experiencia.descripcion),
+        ('Precio', f"${experiencia.precio:,}"),
+        ('Duración', experiencia.duracion),
+        ('Categoría', experiencia.categoria.nombre if experiencia.categoria else 'Sin Categoría'),
+        ('Estado', 'Activo' if experiencia.estado else 'Inactivo'),
+    ]
+    context = {
+        'experiencias': experiencias,
+        'titulo': 'Experiencia',
+        'objeto': experiencia,
+        'detalles': detalles,
+        'accion': 'R',
+        'url_listar': reverse('experiencia_listar'),
     }
     return render(request, 'experiencias/listar_experiencias.html', context)
 
