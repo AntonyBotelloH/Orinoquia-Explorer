@@ -58,7 +58,7 @@
             </h6>
             <div class="list-group list-group-flush small">
                 {% for cat in categorias %}
-                <a href="{% url 'index_usuario' %}?categoria={{ cat.id }}" 
+                <a href="{% url 'index_usuario' %}?categoria={{ cat.id }}#catalogo" 
                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-0 py-2 border-0 border-bottom bg-transparent {% if categoria_actual == cat.id %}fw-bold text-success{% else %}text-muted{% endif %}">
                     <span>{{ cat.nombre }}</span>
                     <span class="badge rounded-pill bg-light text-dark border">{{ cat.num_exp }}</span>
