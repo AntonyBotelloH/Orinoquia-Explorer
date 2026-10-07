@@ -3,7 +3,7 @@ from django.urls import path
 from .views import (
     listar_categoria, crear_categoria, editar_categoria, eliminar_categoria, ver_categoria,
     listar_experiencia, crear_experiencia, editar_experiencia, eliminar_experiencia, ver_experiencia,
-    listar_resena
+    listar_resena, crear_resena, editar_resena, eliminar_resena, ver_resena
 )
 
 urlpatterns = [
@@ -20,6 +20,10 @@ urlpatterns = [
     path('experiencia/eliminar/<int:id>/', eliminar_experiencia, name='experiencia_eliminar'),
 
     path('resena/', listar_resena, name='resena_listar'),
+    path('resena/crear/', crear_resena, name='resena_crear'),
+    path('resena/ver/<int:id>/', ver_resena, name='resena_ver'),
+    path('resena/editar/<int:id>/', editar_resena, name='resena_editar'),
+    path('resena/eliminar/<int:id>/', eliminar_resena, name='resena_eliminar'),
 ]
 
 

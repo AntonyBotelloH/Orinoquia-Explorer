@@ -1,3 +1,4 @@
+from django import forms
 from django.forms import ModelForm
 from .models import Categoria, Resena, Experiencia
 
@@ -22,6 +23,10 @@ class ResenaForm(ModelForm):
         model = Resena
         fields= '__all__'
         exclude = ['fecha_creacion']
+        widgets = {
+            'calificacion': forms.NumberInput(attrs={'min': 1, 'max': 5, 'placeholder': 'Calificación de 1 a 5'}),
+            'comentario': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Escribe aquí la reseña o comentario...'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

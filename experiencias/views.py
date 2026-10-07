@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from .models import Categoria, Experiencia, Resena
-from .forms import CategoriaForm, ExperienciaForm
+from .forms import CategoriaForm, ExperienciaForm, ResenaForm
 from django.contrib import messages
 from usuarios.decorators import rol_requerido
 
@@ -220,5 +220,100 @@ def eliminar_experiencia(request, id):
 
 @rol_requerido('ADMIN', 'GUIA')
 def listar_resena(request):
-    resenas = Resena.objects.all()
-    return render(request, 'experiencias/listar_resena.html', {'resenas': resenas})
+    resenas = Resena.objects.select_related('usuario', 'experiencia').all()
+    context = {
+        'titulo': 'Gestión de Reseñas',
+        'resenas': resenas,
+    }
+    return render(request, 'experiencias/listar_resena.html', context)
+
+@rol_requerido('ADMIN', 'GUIA')
+def ver_resena(request, id):
+    resena = get_object_or_404(Resena.objects.select_related('usuario', 'experiencia'), id=id)
+    resenas = Resena.objects.select_related('usuario', 'experiencia').all()
+    detalles = [
+        ('Usuario', f"{resena.usuario.get_full_name() or resena.usuario.username} ({resena.usuario.email})"),
+        ('Experiencia', resena.experiencia.nombre if resena.experiencia else 'Sin experiencia'),
+        ('Calificación', f"{resena.calificacion} / 5 ⭐"),
+        ('Comentario', resena.comentario),
+        ('Fecha de Creación', resena.fecha_creacion.strftime('%d/%m/%Y %H:%M')),
+    ]
+    context = {
+        'resenas': resenas,
+        'titulo': 'Reseña',
+        'objeto': resena,
+        'detalles': detalles,
+        'accion': 'R',
+        'url_listar': reverse('resena_listar'),
+    }
+    return render(request, 'experiencias/listar_resena.html', context)
+
+@rol_requerido('ADMIN')
+def crear_resena(request):
+    titulo = 'Reseña'
+    form = ResenaForm()
+    if request.method == 'POST':
+        form = ResenaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Reseña creada correctamente.')
+            return redirect('resena_listar')
+        else:
+            for campo, errores in form.errors.items():
+                for error in errores:
+                    messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
+
+    resenas = Resena.objects.select_related('usuario', 'experiencia').all()
+    context = {
+        'resenas': resenas,
+        'titulo': titulo,
+        'form': form,
+        'accion': 'C',
+        'url_listar': reverse('resena_listar'),
+    }
+    return render(request, 'experiencias/listar_resena.html', context)
+
+@rol_requerido('ADMIN')
+def editar_resena(request, id):
+    resena = get_object_or_404(Resena, id=id)
+    titulo = 'Reseña'
+    form = ResenaForm(instance=resena)
+    if request.method == 'POST':
+        form = ResenaForm(request.POST, instance=resena)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Reseña actualizada correctamente.')
+            return redirect('resena_listar')
+        else:
+            for campo, errores in form.errors.items():
+                for error in errores:
+                    messages.error(request, f"Error en el campo '{campo.capitalize()}': {error}")
+
+    resenas = Resena.objects.select_related('usuario', 'experiencia').all()
+    context = {
+        'resenas': resenas,
+        'titulo': titulo,
+        'form': form,
+        'objeto': resena,
+        'accion': 'U',
+        'url_listar': reverse('resena_listar'),
+    }
+    return render(request, 'experiencias/listar_resena.html', context)
+
+@rol_requerido('ADMIN')
+def eliminar_resena(request, id):
+    objeto = get_object_or_404(Resena, id=id)
+    if request.method == 'POST':
+        objeto.delete()
+        messages.success(request, 'Reseña eliminada correctamente.')
+        return redirect('resena_listar')
+
+    resenas = Resena.objects.select_related('usuario', 'experiencia').all()
+    context = {
+        'resenas': resenas,
+        'titulo': 'Reseña',
+        'objeto': objeto,
+        'accion': 'D',
+        'url_listar': reverse('resena_listar'),
+    }
+    return render(request, 'experiencias/listar_resena.html', context)
