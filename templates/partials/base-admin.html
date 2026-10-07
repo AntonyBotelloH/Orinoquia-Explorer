@@ -26,7 +26,7 @@
                     <span class="navbar-brand mb-0 h1">{{ titulo|default:"Panel de Control" }}</span>
                     <div class="d-flex align-items-center dropdown">
                         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="me-2 fw-bold" style="color: var(--brand-primary)">Admin</span>
+                            <span class="me-2 fw-bold" style="color: var(--brand-primary)">{{ request.user.first_name|default:request.user.username }} <small class="text-muted fw-normal">({{ request.user.get_rol_display|default:"Admin" }})</small></span>
                             <i class="bi bi-person-circle fs-3 text-secondary"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser">
@@ -116,6 +116,7 @@
         });
     </script>
         <script src="{% static 'js/DataTables/datatables.min.js' %}"></script>
+        <script src="{% static 'js/chart.min.js' %}"></script>
 
     {% block modales %}
         {% if accion == 'C' %}

@@ -1,0 +1,494 @@
+{% extends 'partials/base-admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Header del Dashboard -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1" style="color: var(--brand-primary); font-family: 'Montserrat', sans-serif;">
+                <i class="bi bi-speedometer2 me-2" style="color: var(--brand-secondary);"></i>Dashboard Administrativo
+            </h2>
+            <p class="text-muted mb-0">
+                Resumen integral del ecosistema turístico de <strong>Orinoquia Explorer</strong>
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'experiencia_crear' %}" class="btn btn-primary shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Nueva Experiencia
+            </a>
+            <a href="{% url 'reserva_crear' %}" class="btn btn-outline-success shadow-sm fw-bold">
+                <i class="bi bi-calendar-plus me-1"></i> Nueva Reserva
+            </a>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Resumen (KPIs) -->
+    <div class="row g-3 mb-4">
+        <!-- KPI 1: Reservas -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="kpi-card h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Total Reservas</span>
+                        <h3 class="fw-bold mt-2 mb-1" style="color: var(--brand-primary);">{{ total_reservas }}</h3>
+                        <div class="small mt-2">
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                <i class="bi bi-check-circle me-1"></i>{{ reservas_confirmadas }} confirmadas
+                            </span>
+                        </div>
+                    </div>
+                    <div class="kpi-icon kpi-icon-primary">
+                        <i class="bi bi-calendar2-check-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 2: Ingresos -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="kpi-card h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Ingresos Totales</span>
+                        <h3 class="fw-bold mt-2 mb-1" style="color: var(--brand-secondary);">${{ total_ingresos|floatformat:0 }}</h3>
+                        <div class="small mt-2">
+                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle">
+                                <i class="bi bi-cash-stack me-1"></i>Por reservas activas
+                            </span>
+                        </div>
+                    </div>
+                    <div class="kpi-icon kpi-icon-secondary">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 3: Experiencias y Catálogo -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="kpi-card h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Experiencias</span>
+                        <h3 class="fw-bold mt-2 mb-1" style="color: var(--brand-primary);">{{ total_experiencias }}</h3>
+                        <div class="small mt-2">
+                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">
+                                <i class="bi bi-tags me-1"></i>{{ total_categorias }} categorías
+                            </span>
+                        </div>
+                    </div>
+                    <div class="kpi-icon kpi-icon-info">
+                        <i class="bi bi-compass-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 4: Usuarios Registrados -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="kpi-card h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Usuarios Totales</span>
+                        <h3 class="fw-bold mt-2 mb-1" style="color: var(--brand-primary);">{{ total_usuarios }}</h3>
+                        <div class="small mt-2">
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                <i class="bi bi-people me-1"></i>{{ turistas_count }} Turistas &bull; {{ guias_count }} Guías
+                            </span>
+                        </div>
+                    </div>
+                    <div class="kpi-icon kpi-icon-accent">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fila 1 de Gráficos (Chart.js) -->
+    <div class="row g-4 mb-4">
+        <!-- Gráfico 1: Tendencia Mensual de Reservas -->
+        <div class="col-12 col-lg-8">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <div>
+                        <h5 class="fw-bold mb-0" style="color: var(--brand-primary);">
+                            <i class="bi bi-graph-up-arrow me-2" style="color: var(--brand-secondary);"></i>Tendencia Anual de Reservas e Ingresos
+                        </h5>
+                        <small class="text-muted">Comportamiento del flujo turístico por mes</small>
+                    </div>
+                    <span class="badge" style="background-color: var(--brand-primary);">Año Actual</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartTendenciaMeses"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico 2: Estado de las Reservas (Doughnut) -->
+        <div class="col-12 col-lg-4">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <div>
+                        <h5 class="fw-bold mb-0" style="color: var(--brand-primary);">
+                            <i class="bi bi-pie-chart-fill me-2" style="color: var(--brand-accent);"></i>Estado de Reservas
+                        </h5>
+                        <small class="text-muted">Proporción de estados del total</small>
+                    </div>
+                </div>
+                <div class="chart-container d-flex align-items-center justify-content-center">
+                    <canvas id="chartEstadoReservas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fila 2 de Gráficos (Chart.js) -->
+    <div class="row g-4 mb-4">
+        <!-- Gráfico 3: Experiencias por Categoría (Bar) -->
+        <div class="col-12 col-lg-7">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <div>
+                        <h5 class="fw-bold mb-0" style="color: var(--brand-primary);">
+                            <i class="bi bi-bar-chart-fill me-2" style="color: var(--brand-secondary);"></i>Experiencias por Categoría
+                        </h5>
+                        <small class="text-muted">Distribución de oferta turística disponible</small>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartExperienciasCat"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico 4: Distribución de Usuarios por Rol (Polar Area / Doughnut) -->
+        <div class="col-12 col-lg-5">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <div>
+                        <h5 class="fw-bold mb-0" style="color: var(--brand-primary);">
+                            <i class="bi bi-person-badge-fill me-2" style="color: var(--brand-primary);"></i>Composición de Usuarios
+                        </h5>
+                        <small class="text-muted">Usuarios agrupados por rol</small>
+                    </div>
+                </div>
+                <div class="chart-container d-flex align-items-center justify-content-center">
+                    <canvas id="chartUsuariosRol"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fila 3: Últimas Reservas y Accesos Rápidos -->
+    <div class="row g-4 mb-3">
+        <!-- Tabla de Últimas Reservas -->
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden h-100">
+                <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0" style="color: var(--brand-primary);">
+                        <i class="bi bi-clock-history me-2" style="color: var(--brand-secondary);"></i>Actividad Reciente: Reservas
+                    </h5>
+                    <a href="{% url 'reserva_listar' %}" class="btn btn-sm btn-outline-primary">
+                        Ver Todas <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Usuario</th>
+                                    <th>Experiencia</th>
+                                    <th>Fecha</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                    <th class="text-center pe-4">Detalle</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for res in ultimas_reservas %}
+                                <tr>
+                                    <td class="ps-4 fw-bold" style="color: var(--brand-secondary);">
+                                        {{ res.usuario.first_name }} {{ res.usuario.last_name|default:res.usuario.username }}
+                                    </td>
+                                    <td>{{ res.experiencia.nombre }}</td>
+                                    <td>{{ res.fecha|date:"d M Y" }}</td>
+                                    <td class="fw-bold">${{ res.precio_total }}</td>
+                                    <td>
+                                        {% if res.estado == 'CONFIRMADA' %}
+                                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Confirmada</span>
+                                        {% elif res.estado == 'CANCELADA' %}
+                                            <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Cancelada</span>
+                                        {% else %}
+                                            <span class="badge" style="background-color: var(--brand-accent); color: var(--brand-dark);"><i class="bi bi-clock me-1"></i>Pendiente</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        <a href="{% url 'reserva_ver' res.id %}" class="btn btn-sm btn-outline-info" title="Visualizar">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="bi bi-calendar-x fs-2 d-block mb-2 text-light"></i>
+                                        No hay reservas registradas en el sistema.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de Accesos Rápidos y Seguridad -->
+        <div class="col-12 col-lg-4">
+            <div class="quick-action-card h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="fw-bold mb-2">
+                        <i class="bi bi-lightning-charge-fill me-2" style="color: var(--brand-accent);"></i>Gestión Rápida
+                    </h5>
+                    <p class="small text-white-50 mb-4">
+                        Atajos rápidos para administrar el catálogo, pólizas y usuarios del portal.
+                    </p>
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'categoria_crear' %}" class="btn btn-light text-dark fw-bold text-start shadow-sm py-2">
+                            <i class="bi bi-tag-fill me-2 text-primary"></i>Nueva Categoría
+                        </a>
+                        <a href="{% url 'experiencia_crear' %}" class="btn btn-light text-dark fw-bold text-start shadow-sm py-2">
+                            <i class="bi bi-compass-fill me-2 text-success"></i>Crear Experiencia
+                        </a>
+                        <a href="{% url 'crear_usuario' %}" class="btn btn-light text-dark fw-bold text-start shadow-sm py-2">
+                            <i class="bi bi-person-plus-fill me-2 text-warning"></i>Registrar Usuario
+                        </a>
+                        <a href="{% url 'poliza_listar' %}" class="btn btn-light text-dark fw-bold text-start shadow-sm py-2">
+                            <i class="bi bi-shield-check me-2 text-info"></i>Ver Pólizas ({{ polizas_vigentes }} vigentes)
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top border-white border-opacity-10 d-flex align-items-center justify-content-between text-white-50 small">
+                    <span><i class="bi bi-shield-lock-fill me-1 text-warning"></i>Sistema Seguro</span>
+                    <span>Orinoquia Explorer v1.0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block script %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Paleta de Colores de la Marca
+    const brandPrimary = '#024944';    // Verde Selva
+    const brandSecondary = '#FF8C00';  // Naranja Atardecer
+    const brandAccent = '#FFD100';     // Amarillo Brillante
+    const brandSuccess = '#198754';
+    const brandDanger = '#dc3545';
+    const brandInfo = '#0dcaf0';
+    const brandPurple = '#6f42c1';
+
+    // 1. Gráfico de Tendencia Mensual (Reservas e Ingresos)
+    const dataMeses = {{ chart_meses|safe }};
+    const ctxTendencia = document.getElementById('chartTendenciaMeses');
+    if (ctxTendencia) {
+        new Chart(ctxTendencia, {
+            type: 'line',
+            data: {
+                labels: dataMeses.labels,
+                datasets: [
+                    {
+                        label: 'Número de Reservas',
+                        data: dataMeses.reservas,
+                        borderColor: brandSecondary,
+                        backgroundColor: 'rgba(255, 140, 0, 0.12)',
+                        borderWidth: 3,
+                        tension: 0.35,
+                        fill: true,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Ingresos ($)',
+                        data: dataMeses.ingresos,
+                        borderColor: brandPrimary,
+                        backgroundColor: 'rgba(2, 73, 68, 0.08)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        tension: 0.35,
+                        fill: false,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: { family: 'Segoe UI', size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        padding: 10,
+                        boxPadding: 4
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Reservas' },
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: { stepSize: 1 }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: { display: true, text: 'Ingresos ($)' },
+                        grid: { drawOnChartArea: false },
+                        ticks: {
+                            callback: function(val) { return '$' + Number(val).toLocaleString(); }
+                        }
+                    },
+                    x: {
+                        grid: { color: 'rgba(0,0,0,0.03)' }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Gráfico de Estado de Reservas (Doughnut)
+    const dataEstado = {{ chart_reservas_estado|safe }};
+    const ctxEstado = document.getElementById('chartEstadoReservas');
+    if (ctxEstado) {
+        // Fallback si todos son cero para que se vea interactivo
+        const allZeroEstado = dataEstado.data.every(v => v === 0);
+        const displayData = allZeroEstado ? [1, 0, 0] : dataEstado.data;
+
+        new Chart(ctxEstado, {
+            type: 'doughnut',
+            data: {
+                labels: dataEstado.labels,
+                datasets: [{
+                    data: displayData,
+                    backgroundColor: [brandSuccess, brandAccent, brandDanger],
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 16,
+                            font: { family: 'Segoe UI', size: 12 }
+                        }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+
+    // 3. Gráfico de Experiencias por Categoría (Bar)
+    const dataCat = {{ chart_categorias|safe }};
+    const ctxCat = document.getElementById('chartExperienciasCat');
+    if (ctxCat) {
+        const paletaColores = [brandPrimary, brandSecondary, brandInfo, brandPurple, brandSuccess, brandAccent];
+        const barColors = dataCat.labels.map((_, i) => paletaColores[i % paletaColores.length]);
+
+        new Chart(ctxCat, {
+            type: 'bar',
+            data: {
+                labels: dataCat.labels.length > 0 ? dataCat.labels : ['Sin Categorías'],
+                datasets: [{
+                    label: 'Experiencias',
+                    data: dataCat.data.length > 0 ? dataCat.data : [0],
+                    backgroundColor: barColors,
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // 4. Gráfico de Usuarios por Rol (Polar Area / Pie)
+    const dataRol = {{ chart_usuarios_rol|safe }};
+    const ctxRol = document.getElementById('chartUsuariosRol');
+    if (ctxRol) {
+        new Chart(ctxRol, {
+            type: 'polarArea',
+            data: {
+                labels: dataRol.labels,
+                datasets: [{
+                    data: dataRol.data,
+                    backgroundColor: [
+                        'rgba(13, 110, 253, 0.75)',  // Turistas: Azul
+                        'rgba(2, 73, 68, 0.75)',    // Guías: Verde Selva
+                        'rgba(220, 53, 69, 0.75)'   // Admins: Rojo
+                    ],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 14,
+                            font: { family: 'Segoe UI', size: 12 }
+                        }
+                    }
+                },
+                scales: {
+                    r: {
+                        ticks: { stepSize: 1, display: false },
+                        grid: { color: 'rgba(0,0,0,0.06)' }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock script %}
