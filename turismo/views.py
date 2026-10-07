@@ -20,7 +20,7 @@ def index_usuario(request):
     q = request.GET.get('q', '').strip()
 
     # Experiencias activas subidas en la plataforma
-    experiencias_qs = Experiencia.objects.filter(estado=True).select_related('categoria')
+    experiencias_qs = Experiencia.objects.filter(estado=True).select_related('categoria').prefetch_related('resena_set__usuario')
 
     if categoria_id and categoria_id.isdigit():
         experiencias_qs = experiencias_qs.filter(categoria_id=int(categoria_id))

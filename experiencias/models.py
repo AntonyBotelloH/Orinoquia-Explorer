@@ -53,6 +53,17 @@ class Experiencia(models.Model):
 
         super().save(*args, **kwargs)
 
+    @property
+    def promedio_calificacion(self):
+        res = list(self.resena_set.all())
+        if not res:
+            return None
+        return round(sum(r.calificacion for r in res) / len(res), 1)
+
+    @property
+    def total_resenas(self):
+        return self.resena_set.count()
+
     def __str__(self):
         return self.nombre
 
