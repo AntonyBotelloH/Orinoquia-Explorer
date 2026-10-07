@@ -87,7 +87,7 @@
                     {% if exp.imagen %}
                         <img src="{{ exp.imagen.url }}" alt="{{ exp.nombre }}" class="w-100 h-100" style="object-fit: cover;">
                     {% else %}
-                        <img src="{% static 'images/banner.jpeg' %}" alt="{{ exp.nombre }}" class="w-100 h-100" style="object-fit: cover;">
+                        <img src="{% static 'images/banner.webp' %}" alt="{{ exp.nombre }}" class="w-100 h-100" style="object-fit: cover;">
                     {% endif %}
                     
                     <!-- Badge Categoría -->
@@ -138,7 +138,7 @@
                         {% if exp.imagen %}
                             <img src="{{ exp.imagen.url }}" alt="{{ exp.nombre }}" class="w-100 h-100" style="object-fit: cover; opacity: 0.85;">
                         {% else %}
-                            <img src="{% static 'images/banner.jpeg' %}" alt="{{ exp.nombre }}" class="w-100 h-100" style="object-fit: cover; opacity: 0.85;">
+                            <img src="{% static 'images/banner.webp' %}" alt="{{ exp.nombre }}" class="w-100 h-100" style="object-fit: cover; opacity: 0.85;">
                         {% endif %}
                         <div class="position-absolute top-0 end-0 p-3">
                             <button type="button" class="btn btn-close btn-close-white shadow-sm" data-bs-dismiss="modal" aria-label="Cerrar"></button>

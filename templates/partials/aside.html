@@ -23,7 +23,7 @@
             {% if destacada.imagen %}
                 <img src="{{ destacada.imagen.url }}" alt="{{ destacada.nombre }}" class="w-100 h-100" style="object-fit: cover;">
             {% else %}
-                <img src="{% static 'images/banner.jpeg' %}" alt="{{ destacada.nombre }}" class="w-100 h-100" style="object-fit: cover;">
+                <img src="{% static 'images/banner.webp' %}" alt="{{ destacada.nombre }}" class="w-100 h-100" style="object-fit: cover;">
             {% endif %}
             <span class="badge bg-warning text-dark fw-bold position-absolute top-0 start-0 m-2 shadow-sm">
                 <i class="bi bi-star-fill me-1"></i>Destacado
