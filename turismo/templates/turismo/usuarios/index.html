@@ -130,9 +130,14 @@
                             </span>
                         </div>
 
-                        <button type="button" class="btn btn-outline-success fw-bold w-100 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalExp{{ exp.id }}">
-                            <i class="bi bi-compass-fill me-1"></i> Ver Experiencia
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-success fw-bold flex-grow-1 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalExp{{ exp.id }}">
+                                <i class="bi bi-eye-fill me-1"></i> Ver Detalles
+                            </button>
+                            <a href="{% url 'reservar_usuario' %}?exp={{ exp.id }}" class="btn btn-success fw-bold py-2 px-3 rounded-3 shadow-sm text-nowrap">
+                                <i class="bi bi-calendar2-check-fill me-1"></i> Reservar
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -250,17 +255,55 @@
                         </div>
 
                         <!-- Formulario de Reserva con Consulta de Clima -->
-                        {% if user.is_authenticated %}
                         <div class="mt-4 pt-3 border-top">
-                            <h6 class="fw-bold text-success mb-3">
-                                <i class="bi bi-calendar2-check-fill me-2 text-warning"></i>Solicitar Reserva de esta Aventura
-                            </h6>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold text-success mb-0">
+                                    <i class="bi bi-calendar2-check-fill me-2 text-warning"></i>Solicitar Reserva de esta Aventura
+                                </h6>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                    <i class="bi bi-shield-check me-1"></i>Póliza Médica Incluida
+                                </span>
+                            </div>
+
                             <form method="POST" action="{% url 'solicitar_reserva' exp.id %}">
                                 {% csrf_token %}
+
+                                {% if user.is_authenticated %}
+                                <div class="p-2 px-3 bg-light rounded-3 border mb-3 small d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <i class="bi bi-person-check-fill text-success me-1"></i>
+                                        Reservando como: <strong>{{ user.get_full_name|default:user.username }}</strong> ({{ user.email }})
+                                    </span>
+                                    <span class="badge bg-success-subtle text-success">Cuenta activa</span>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-info py-2 px-3 small mb-3 border-0 rounded-3">
+                                    <i class="bi bi-info-circle-fill me-1"></i> ¿No tienes cuenta? Completa tus datos abajo y te registraremos automáticamente como turista al confirmar tu reserva. Si ya tienes cuenta, <a href="{% url 'login' %}?next={{ request.path }}" class="alert-link fw-bold">inicia sesión aquí</a>.
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-dark mb-1">Nombre Completo <span class="text-danger">*</span></label>
+                                        <input type="text" name="nombre" class="form-control form-control-sm" placeholder="Ej. Carlos Mendoza" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-dark mb-1">Correo Electrónico <span class="text-danger">*</span></label>
+                                        <input type="email" name="email" class="form-control form-control-sm" placeholder="correo@ejemplo.com" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-dark mb-1">Teléfono / WhatsApp <span class="text-danger">*</span></label>
+                                        <input type="tel" name="telefono" class="form-control form-control-sm" placeholder="Ej. 3101234567" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-dark mb-1">Documento / Cédula <span class="text-danger">*</span></label>
+                                        <input type="text" name="documento" class="form-control form-control-sm" placeholder="Para la póliza de viaje" required>
+                                    </div>
+                                </div>
+                                {% endif %}
+
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label for="fechaExp{{ exp.id }}" class="form-label fw-bold small text-dark">
-                                            <i class="bi bi-calendar-event me-1 text-warning"></i>Fecha del viaje:
+                                            <i class="bi bi-calendar-event me-1 text-warning"></i>Fecha del viaje <span class="text-danger">*</span>:
                                         </label>
                                         <input type="date" name="fecha" id="fechaExp{{ exp.id }}" class="form-control fecha-reserva-input" 
                                                data-target="climaBox{{ exp.id }}" required min="{% now 'Y-m-d' %}">
@@ -268,9 +311,13 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label for="personasExp{{ exp.id }}" class="form-label fw-bold small text-dark">
-                                            <i class="bi bi-people-fill me-1 text-primary"></i>Número de Personas:
+                                            <i class="bi bi-people-fill me-1 text-primary"></i>Número de Personas <span class="text-danger">*</span>:
                                         </label>
-                                        <input type="number" name="numero_personas" id="personasExp{{ exp.id }}" class="form-control" value="1" min="1" max="30" required>
+                                        <input type="number" name="numero_personas" id="personasExp{{ exp.id }}" 
+                                               class="form-control input-personas-modal" 
+                                               data-precio="{{ exp.precio }}" 
+                                               data-target-total="totalModalExp{{ exp.id }}" 
+                                               value="1" min="1" max="30" required>
                                     </div>
                                     <div class="col-12">
                                         <label for="peticionesExp{{ exp.id }}" class="form-label fw-bold small text-dark">
@@ -283,21 +330,23 @@
                                 <!-- Contenedor dinámico del Clima para la fecha -->
                                 <div id="climaBox{{ exp.id }}" class="clima-box-container mt-3" style="display: none;"></div>
 
-                                <div class="d-flex justify-content-end mt-3">
-                                    <button type="submit" class="btn btn-success fw-bold px-4 py-2">
-                                        <i class="bi bi-check2-circle me-1"></i> Confirmar Solicitud de Reserva
-                                    </button>
+                                <!-- Resumen de Costo y Botón de Envío -->
+                                <div class="d-flex justify-content-between align-items-center mt-3 p-3 bg-light rounded-3 border flex-wrap gap-2">
+                                    <div>
+                                        <span class="text-muted small d-block">Total a pagar:</span>
+                                        <strong id="totalModalExp{{ exp.id }}" class="fs-5 fw-bold text-success">${{ exp.precio|moneda_cop }} COP</strong>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'reservar_usuario' %}?exp={{ exp.id }}" class="btn btn-outline-secondary btn-sm d-flex align-items-center" title="Abrir página completa de reserva">
+                                            <i class="bi bi-arrows-fullscreen me-1"></i> Pantalla completa
+                                        </a>
+                                        <button type="submit" class="btn btn-success fw-bold px-4 py-2 shadow-sm">
+                                            <i class="bi bi-check2-circle me-1"></i> Confirmar Reserva
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
                         </div>
-                        {% else %}
-                        <div class="mt-4 pt-3 border-top text-center bg-light p-3 rounded-3">
-                            <p class="text-muted small mb-2">Para consultar el clima de tu fecha y reservar tu cupo en línea:</p>
-                            <a href="{% url 'login' %}?next={% url 'index_usuario' %}" class="btn btn-warning fw-bold text-dark px-4">
-                                <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión para Reservar
-                            </a>
-                        </div>
-                        {% endif %}
                     </div>
 
                     <!-- Pie del Modal -->
@@ -390,6 +439,23 @@ document.addEventListener("DOMContentLoaded", function () {
                     `;
                 });
         });
+    });
+
+    // Recálculo dinámico del total en los modales
+    const modalPersonasInputs = document.querySelectorAll('.input-personas-modal');
+    modalPersonasInputs.forEach(input => {
+        const updateModalTotal = function () {
+            const precioUnitario = parseFloat(input.getAttribute('data-precio')) || 0;
+            const targetTotalId = input.getAttribute('data-target-total');
+            const targetEl = document.getElementById(targetTotalId);
+            const cantidad = Math.max(1, parseInt(input.value) || 1);
+            if (targetEl) {
+                const total = precioUnitario * cantidad;
+                targetEl.textContent = `$ ${Math.round(total).toLocaleString('es-CO')} COP`;
+            }
+        };
+        input.addEventListener('input', updateModalTotal);
+        input.addEventListener('change', updateModalTotal);
     });
 });
 </script>

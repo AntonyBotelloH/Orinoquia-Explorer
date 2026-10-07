@@ -7,6 +7,7 @@ urlpatterns = [
     path('destinos/', views.destinos_usuario, name='destinos_usuario'),
     path('cultura-y-gastronomia/', views.cultura_usuario, name='cultura_usuario'),
     path('contacto/', views.contacto_usuario, name='contacto_usuario'),
+    path('reservar/', views.reservar_usuario, name='reservar_usuario'),
 
     # Utilidades y reservas
     path('dashboard/', views.dashboard_admin, name='dashboard_admin'),

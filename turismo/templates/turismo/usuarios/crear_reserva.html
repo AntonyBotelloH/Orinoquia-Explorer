@@ -1,0 +1,390 @@
+{% extends 'partials/base-user.html' %}
+{% load static %}
+
+{% block main_layout %}
+<div class="crear-reserva-page py-2">
+    <!-- Hero Header -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5 text-white position-relative" 
+         style="background: linear-gradient(135deg, #024944 0%, #065f46 50%, #0d9488 100%);">
+        <div class="card-body p-4 p-md-5 position-relative" style="z-index: 2;">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+                        <i class="bi bi-calendar2-check-fill me-1"></i> Reserva Oficial en Línea
+                    </span>
+                    <h1 class="display-5 fw-bold mb-3 text-white">
+                        Crea tu Reserva de Aventura
+                    </h1>
+                    <p class="lead mb-0 text-white-50" style="max-width: 650px;">
+                        Selecciona tu expedición, consulta el pronóstico del clima en vivo para tu fecha de viaje y asegura tu cupo con póliza de asistencia médica y rescate garantizada.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
+                    <div class="bg-white bg-opacity-10 p-3 rounded-4 backdrop-blur border border-white border-opacity-25 d-inline-block text-center">
+                        <i class="bi bi-shield-check fs-1 text-warning d-block mb-1"></i>
+                        <span class="fw-bold d-block text-white">100% Garantizado</span>
+                        <span class="small text-white-50">Póliza y guías certificados</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="position-absolute end-0 bottom-0 opacity-10 p-3 d-none d-md-block" style="font-size: 14rem; line-height: 0; pointer-events: none;">
+            <i class="bi bi-calendar2-heart"></i>
+        </div>
+    </div>
+
+    <!-- Contenedor Principal: Formulario + Resumen en Vivo -->
+    <div class="row g-4 mb-5">
+        <!-- Columna Izquierda: Formulario de Reserva -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 bg-white">
+                <div class="card-body p-4 p-md-5">
+                    <h4 class="fw-bold text-dark mb-4" style="font-family: 'Montserrat', sans-serif;">
+                        <i class="bi bi-pencil-square text-warning me-2"></i>Detalles de tu Reserva
+                    </h4>
+
+                    <form method="POST" action="{% url 'reservar_usuario' %}" id="formCrearReserva">
+                        {% csrf_token %}
+
+                        <!-- Paso 1: Selección de Experiencia -->
+                        <div class="mb-4">
+                            <label for="selectExperiencia" class="form-label fw-bold small text-secondary">
+                                1. Selecciona la Experiencia o Expedición <span class="text-danger">*</span>
+                            </label>
+                            <select name="experiencia_id" id="selectExperiencia" class="form-select form-select-lg py-2 fs-6" required>
+                                <option value="" disabled {% if not exp_seleccionada %}selected{% endif %}>Elige una experiencia de la lista...</option>
+                                {% for exp in experiencias %}
+                                    <option value="{{ exp.id }}" 
+                                            data-precio="{{ exp.precio }}" 
+                                            data-nombre="{{ exp.nombre }}" 
+                                            data-duracion="{{ exp.duracion }}"
+                                            data-categoria="{{ exp.categoria.nombre }}"
+                                            {% if exp.imagen %}data-imagen="{{ exp.imagen.url }}"{% else %}data-imagen="{% static 'images/banner.webp' %}"{% endif %}
+                                            {% if exp_seleccionada and exp_seleccionada.id == exp.id %}selected{% endif %}>
+                                        {{ exp.nombre }} — ${{ exp.precio|moneda_cop }} COP ({{ exp.categoria.nombre }}, {{ exp.duracion }}h)
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Paso 2: Fecha de Viaje y Clima en Vivo -->
+                        <div class="mb-4">
+                            <label for="inputFechaViaje" class="form-label fw-bold small text-secondary">
+                                2. Fecha Deseada del Viaje <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-event"></i></span>
+                                <input type="date" name="fecha" id="inputFechaViaje" class="form-control py-2" 
+                                       required min="{% now 'Y-m-d' %}" value="{{ fecha_inicial }}">
+                            </div>
+                            <small class="text-muted d-block mt-1">
+                                <i class="bi bi-info-circle me-1 text-success"></i>Al elegir una fecha, nuestro sistema consulta automáticamente el pronóstico del clima en los Llanos Orientales.
+                            </small>
+
+                            <!-- Caja del Clima Dinámica -->
+                            <div id="cajaClimaReserva" class="mt-3" style="display: none;"></div>
+                        </div>
+
+                        <!-- Paso 3: Número de Personas -->
+                        <div class="mb-4">
+                            <label for="inputPersonas" class="form-label fw-bold small text-secondary">
+                                3. Número de Viajeros / Cupos <span class="text-danger">*</span>
+                            </label>
+                            <div class="row align-items-center g-2">
+                                <div class="col-sm-6">
+                                    <div class="input-group">
+                                        <button class="btn btn-outline-secondary" type="button" id="btnRestarPersonas"><i class="bi bi-dash"></i></button>
+                                        <input type="number" name="numero_personas" id="inputPersonas" class="form-control text-center fw-bold" value="1" min="1" max="30" required>
+                                        <button class="btn btn-outline-secondary" type="button" id="btnSumarPersonas"><i class="bi bi-plus"></i></button>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 text-muted small">
+                                    <span>Capacidad guiada hasta 30 personas</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paso 4: Datos del Turista -->
+                        <div class="mb-4 pt-3 border-top">
+                            <h5 class="fw-bold text-dark mb-3">
+                                <i class="bi bi-person-bounding-box text-success me-2"></i>Datos del Titular de la Reserva
+                            </h5>
+
+                            {% if user.is_authenticated %}
+                                <div class="alert alert-success bg-opacity-10 border-0 p-3 rounded-3 d-flex align-items-center gap-3">
+                                    <div class="p-2 rounded-circle bg-success text-white">
+                                        <i class="bi bi-person-check-fill fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <strong class="d-block text-dark">{{ user.get_full_name|default:user.username }}</strong>
+                                        <small class="text-muted">{{ user.email }} | Doc: {{ user.documento|default:"Registrado" }}</small>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p class="text-muted small mb-3">
+                                    Ingresa tus datos de contacto para emitir la reserva y vincular tu póliza médica:
+                                </p>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold text-secondary">Nombre Completo <span class="text-danger">*</span></label>
+                                        <input type="text" name="nombre" class="form-control" placeholder="Ej: Camilo Andrés Pérez" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold text-secondary">Correo Electrónico <span class="text-danger">*</span></label>
+                                        <input type="email" name="email" class="form-control" placeholder="camilo@ejemplo.com" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold text-secondary">Teléfono o WhatsApp <span class="text-danger">*</span></label>
+                                        <input type="tel" name="telefono" class="form-control" placeholder="+57 310 123 4567" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold text-secondary">Cédula o Documento <span class="text-danger">*</span></label>
+                                        <input type="text" name="documento" class="form-control" placeholder="Número de identificación" required>
+                                    </div>
+                                </div>
+                                <div class="small text-muted mt-2">
+                                    ¿Ya tienes cuenta? <a href="{% url 'login' %}?next={% url 'reservar_usuario' %}" class="text-success fw-bold">Inicia sesión aquí</a>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Paso 5: Peticiones Especiales -->
+                        <div class="mb-4">
+                            <label for="inputPeticiones" class="form-label fw-bold small text-secondary">
+                                Peticiones Especiales o Preferencias (Opcional)
+                            </label>
+                            <textarea name="peticiones_especiales" id="inputPeticiones" class="form-control" rows="2" 
+                                      placeholder="Dietas especiales, punto de recogida, nivel de condición física o consultas..."></textarea>
+                        </div>
+
+                        <!-- Botón Submit -->
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-warning py-3 fw-bold text-dark fs-5 shadow-sm" id="btnConfirmarReserva">
+                                <i class="bi bi-check2-circle me-2"></i> Confirmar y Crear Reserva
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Tarjeta de Resumen en Vivo (Sticky) -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 bg-white sticky-top" style="top: 2rem;">
+                <!-- Imagen previa de la experiencia -->
+                <div class="position-relative rounded-top-4 overflow-hidden" style="height: 190px; background-color: #024944;">
+                    <img id="imgResumenExp" src="{% if exp_seleccionada and exp_seleccionada.imagen %}{{ exp_seleccionada.imagen.url }}{% else %}{% static 'images/banner.webp' %}{% endif %}" 
+                         alt="Experiencia" class="w-100 h-100" style="object-fit: cover;">
+                    <span id="badgeCatResumen" class="badge bg-warning text-dark fw-bold position-absolute top-0 start-0 m-3 shadow-sm">
+                        {{ exp_seleccionada.categoria.nombre|default:"Aventura Llanera" }}
+                    </span>
+                    <span id="badgeDurResumen" class="badge bg-dark bg-opacity-75 text-white position-absolute top-0 end-0 m-3 shadow-sm">
+                        {{ exp_seleccionada.duracion|default:"4" }}h
+                    </span>
+                </div>
+
+                <div class="card-body p-4">
+                    <h5 id="tituloResumenExp" class="fw-bold text-dark mb-3">
+                        {{ exp_seleccionada.nombre|default:"Selecciona una experiencia" }}
+                    </h5>
+
+                    <!-- Desglose de Liquidación -->
+                    <div class="p-3 bg-light rounded-3 border mb-3">
+                        <div class="d-flex justify-content-between align-items-center py-1">
+                            <span class="text-muted small">Tarifa por persona:</span>
+                            <span class="fw-bold text-dark" id="txtPrecioUnitario">$0 COP</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center py-1">
+                            <span class="text-muted small">Número de viajeros:</span>
+                            <span class="fw-bold text-dark" id="txtPersonasMultiplicador">1 viajero</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center py-1">
+                            <span class="text-muted small">Póliza Médica de Turismo:</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                <i class="bi bi-shield-check me-1"></i>Incluida
+                            </span>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between align-items-center pt-1">
+                            <strong class="text-dark">Total Estimado:</strong>
+                            <strong class="fs-4 text-success" id="txtPrecioTotal">$0 COP</strong>
+                        </div>
+                    </div>
+
+                    <!-- Mini resumen de fecha y clima -->
+                    <div id="miniResumenClima" class="p-3 rounded-3 mb-3 border bg-white" style="display: none;">
+                        <small class="text-muted d-block fw-bold mb-1" style="font-size: 0.72rem; text-transform: uppercase;">
+                            <i class="bi bi-cloud-sun text-warning me-1"></i>Condición Prevista:
+                        </small>
+                        <span id="txtClimaPreview" class="small fw-semibold text-dark d-block"></span>
+                    </div>
+
+                    <!-- Beneficios Incluidos -->
+                    <div class="small text-muted">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <span>Cancelación flexible hasta 48h antes</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <span>Acompañamiento por guía profesional certificado</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <span>Asistencia médica contra todo riesgo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script de cálculo en vivo y consulta meteorológica -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const selectExp = document.getElementById('selectExperiencia');
+    const inputFecha = document.getElementById('inputFechaViaje');
+    const inputPersonas = document.getElementById('inputPersonas');
+    const btnRestar = document.getElementById('btnRestarPersonas');
+    const btnSumar = document.getElementById('btnSumarPersonas');
+
+    const txtPrecioUnitario = document.getElementById('txtPrecioUnitario');
+    const txtPersonasMulti = document.getElementById('txtPersonasMultiplicador');
+    const txtPrecioTotal = document.getElementById('txtPrecioTotal');
+    const tituloResumen = document.getElementById('tituloResumenExp');
+    const badgeCat = document.getElementById('badgeCatResumen');
+    const badgeDur = document.getElementById('badgeDurResumen');
+    const imgResumen = document.getElementById('imgResumenExp');
+    const cajaClima = document.getElementById('cajaClimaReserva');
+    const miniResumenClima = document.getElementById('miniResumenClima');
+    const txtClimaPreview = document.getElementById('txtClimaPreview');
+
+    function formatearMiles(numero) {
+        return Math.round(numero).toLocaleString('es-CO');
+    }
+
+    function actualizarCalculos() {
+        const option = selectExp.options[selectExp.selectedIndex];
+        if (!option || !option.value) {
+            txtPrecioUnitario.textContent = '$0 COP';
+            txtPrecioTotal.textContent = '$0 COP';
+            return;
+        }
+
+        const precio = parseFloat(option.getAttribute('data-precio')) || 0;
+        const nombre = option.getAttribute('data-nombre');
+        const duracion = option.getAttribute('data-duracion');
+        const categoria = option.getAttribute('data-categoria');
+        const imagen = option.getAttribute('data-imagen');
+        const personas = Math.max(1, parseInt(inputPersonas.value) || 1);
+
+        const total = precio * personas;
+
+        txtPrecioUnitario.textContent = '$' + formatearMiles(precio) + ' COP';
+        txtPersonasMulti.textContent = personas + (personas === 1 ? ' viajero' : ' viajeros');
+        txtPrecioTotal.textContent = '$' + formatearMiles(total) + ' COP';
+
+        tituloResumen.textContent = nombre;
+        badgeCat.textContent = categoria;
+        badgeDur.textContent = duracion + 'h';
+        if (imagen) imgResumen.src = imagen;
+    }
+
+    selectExp.addEventListener('change', actualizarCalculos);
+
+    btnRestar.addEventListener('click', function() {
+        let val = parseInt(inputPersonas.value) || 1;
+        if (val > 1) {
+            inputPersonas.value = val - 1;
+            actualizarCalculos();
+        }
+    });
+
+    btnSumar.addEventListener('click', function() {
+        let val = parseInt(inputPersonas.value) || 1;
+        if (val < 30) {
+            inputPersonas.value = val + 1;
+            actualizarCalculos();
+        }
+    });
+
+    inputPersonas.addEventListener('input', actualizarCalculos);
+
+    // Consulta del Clima
+    function consultarClima(fecha) {
+        if (!fecha) {
+            cajaClima.style.display = 'none';
+            miniResumenClima.style.display = 'none';
+            return;
+        }
+
+        cajaClima.style.display = 'block';
+        cajaClima.innerHTML = `
+            <div class="card border-0 bg-light p-3 rounded-3 text-center text-muted small">
+                <span class="spinner-border spinner-border-sm me-2 text-success" role="status"></span>
+                Consultando condiciones del clima para el ${fecha}...
+            </div>
+        `;
+
+        fetch(`/api/clima-fecha/?fecha=${fecha}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.valido) {
+                    const alertLluvia = data.alerta_lluvia ? 
+                        `<span class="badge bg-warning text-dark"><i class="bi bi-cloud-rain me-1"></i>Prob. Lluvia: ${data.probabilidad_lluvia}</span>` : 
+                        `<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle me-1"></i>Tiempo favorable</span>`;
+
+                    const tipoBadge = data.es_pronostico_preciso ? 
+                        `<span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1"><i class="bi bi-broadcast me-1"></i>Pronóstico en vivo</span>` : 
+                        `<span class="badge bg-light text-muted border me-1"><i class="bi bi-calendar3 me-1"></i>Clima estacional</span>`;
+
+                    cajaClima.innerHTML = `
+                        <div class="card border-0 p-3 rounded-3 shadow-sm" style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-left: 4px solid #15803d !important;">
+                            <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+                                <div class="d-flex align-items-center gap-3">
+                                    <i class="bi ${data.icono} ${data.icono_color} fs-2"></i>
+                                    <div>
+                                        <div class="fw-bold text-dark fs-6">${data.temperatura} — ${data.condicion}</div>
+                                        <small class="text-muted">${data.temporada}</small>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-1">${tipoBadge} ${alertLluvia}</div>
+                            </div>
+                            <div class="small text-muted pt-2 border-top mt-1" style="font-size: 0.82rem; line-height: 1.4;">
+                                <i class="bi bi-compass-fill text-success me-1"></i><strong>Recomendación:</strong> ${data.recomendacion}
+                            </div>
+                        </div>
+                    `;
+
+                    miniResumenClima.style.display = 'block';
+                    txtClimaPreview.innerHTML = `<i class="bi ${data.icono} ${data.icono_color} me-1"></i> ${data.temperatura} | ${data.condicion} (${data.temporada})`;
+                } else {
+                    cajaClima.innerHTML = `
+                        <div class="alert alert-warning py-2 px-3 small mb-0 rounded-3">
+                            <i class="bi bi-exclamation-triangle me-1"></i> No se pudo obtener el pronóstico meteorológico.
+                        </div>
+                    `;
+                }
+            })
+            .catch(() => {
+                cajaClima.innerHTML = `
+                    <div class="alert alert-light border py-2 px-3 small mb-0 text-muted">
+                        <i class="bi bi-info-circle me-1"></i> Servicio meteorológico no disponible temporalmente.
+                    </div>
+                `;
+            });
+    }
+
+    inputFecha.addEventListener('change', function() {
+        consultarClima(this.value);
+    });
+
+    // Inicializar si ya hay experiencia o fecha seleccionada
+    actualizarCalculos();
+    if (inputFecha.value) {
+        consultarClima(inputFecha.value);
+    }
+});
+</script>
+{% endblock main_layout %}

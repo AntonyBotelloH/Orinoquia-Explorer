@@ -277,11 +277,79 @@ def api_clima_fecha(request):
     return JsonResponse(data)
 
 
-@login_required
+from django.contrib.auth import login
+
+def procesar_creacion_reserva(request, experiencia, fecha, numero_personas, peticiones, nombre='', email='', telefono='', documento=''):
+    try:
+        num_p = max(1, int(numero_personas))
+    except (ValueError, TypeError):
+        num_p = 1
+
+    precio_total = Decimal(str(experiencia.precio)) * Decimal(num_p)
+
+    if request.user.is_authenticated:
+        usuario = request.user
+    else:
+        if not email or not nombre:
+            return None, 'Por favor ingresa tu nombre y correo electrónico para registrar tu reserva.'
+
+        usuario = Usuario.objects.filter(email=email).first()
+        if not usuario and documento:
+            usuario = Usuario.objects.filter(documento=documento).first()
+
+        if not usuario:
+            doc_final = documento if documento else f"CC{timezone.now().strftime('%y%m%d%H%M%S')}"
+            counter = 1
+            cand_doc = doc_final
+            while Usuario.objects.filter(documento=cand_doc).exists():
+                cand_doc = f"{doc_final}_{counter}"
+                counter += 1
+            doc_final = cand_doc
+
+            partes = nombre.split(' ', 1)
+            f_name = partes[0]
+            l_name = partes[1] if len(partes) > 1 else 'Turista'
+
+            usuario = Usuario.objects.create(
+                username=doc_final,
+                email=email,
+                first_name=f_name,
+                last_name=l_name,
+                documento=doc_final,
+                tipo_documento='CC',
+                rol='TURISTA',
+                is_active=True
+            )
+            usuario.set_password(doc_final)
+            usuario.save()
+
+        # Iniciar sesión al usuario para que vea su reserva en su perfil
+        login(request, usuario, backend='usuarios.backends.EmailBackend')
+
+    if telefono:
+        contacto_nota = f"Teléfono / WhatsApp: {telefono}"
+        peticiones = f"{contacto_nota} | {peticiones}" if peticiones else contacto_nota
+
+    poliza_activa = PolizaSeguro.objects.filter(fecha_expiracion__gte=timezone.now().date()).first()
+
+    reserva = Reserva.objects.create(
+        usuario=usuario,
+        experiencia=experiencia,
+        fecha=fecha,
+        numero_personas=num_p,
+        precio_total=precio_total,
+        estado='PENDIENTE',
+        peticiones_especiales=peticiones,
+        poliza=poliza_activa
+    )
+
+    return reserva, None
+
+
 def solicitar_reserva(request, exp_id):
     """
-    Permite a los turistas autenticados solicitar y registrar una reserva
-    directamente desde el catálogo de experiencias.
+    Permite a los turistas (autenticados o nuevos visitantes) solicitar y crear
+    una reserva directamente desde el modal de la experiencia en el catálogo.
     """
     if request.method != 'POST':
         return redirect('index_usuario')
@@ -290,34 +358,90 @@ def solicitar_reserva(request, exp_id):
     fecha = request.POST.get('fecha')
     numero_personas = request.POST.get('numero_personas', 1)
     peticiones = request.POST.get('peticiones_especiales', '').strip()
+    nombre = request.POST.get('nombre', '').strip()
+    email = request.POST.get('email', '').strip()
+    telefono = request.POST.get('telefono', '').strip()
+    documento = request.POST.get('documento', '').strip()
 
     if not fecha:
         messages.error(request, 'Debes seleccionar una fecha para tu reserva.')
         return redirect(f"{reverse('index_usuario')}#catalogo")
 
-    try:
-        num_p = max(1, int(numero_personas))
-    except (ValueError, TypeError):
-        num_p = 1
-
-    precio_total = Decimal(str(experiencia.precio)) * Decimal(num_p)
-
-    Reserva.objects.create(
-        usuario=request.user,
-        experiencia=experiencia,
-        fecha=fecha,
-        numero_personas=num_p,
-        precio_total=precio_total,
-        estado='PENDIENTE',
-        peticiones_especiales=peticiones
+    reserva, error = procesar_creacion_reserva(
+        request, experiencia, fecha, numero_personas, peticiones,
+        nombre=nombre, email=email, telefono=telefono, documento=documento
     )
+
+    if error:
+        messages.error(request, error)
+        return redirect(f"{reverse('index_usuario')}#catalogo")
 
     messages.success(
         request,
-        f'¡Excelente! Tu reserva para "{experiencia.nombre}" ha sido solicitada con éxito para el {fecha}. '
-        f'Revisa los detalles en tu perfil.'
+        f'¡Excelente {reserva.usuario.first_name}! Tu reserva #{reserva.id} para "{experiencia.nombre}" '
+        f'ha sido creada exitosamente para el {fecha}. Total: ${reserva.precio_formateado} COP. '
+        f'Póliza de viaje: {reserva.poliza.numero_poliza if reserva.poliza else "Asignada"}.'
     )
     return redirect(f"{reverse('perfil')}?layout=user#tab-reservas")
+
+
+def reservar_usuario(request):
+    """
+    Página pública para crear y configurar una reserva directamente desde el sitio:
+    permite elegir experiencia, consultar clima en tiempo real para la fecha elegida,
+    calcular el total en vivo y confirmar la reserva.
+    """
+    if request.method == 'POST':
+        exp_id = request.POST.get('experiencia_id')
+        if not exp_id:
+            messages.error(request, 'Debes seleccionar una experiencia.')
+            return redirect('reservar_usuario')
+
+        experiencia = get_object_or_404(Experiencia, id=exp_id, estado=True)
+        fecha = request.POST.get('fecha')
+        numero_personas = request.POST.get('numero_personas', 1)
+        peticiones = request.POST.get('peticiones_especiales', '').strip()
+        nombre = request.POST.get('nombre', '').strip()
+        email = request.POST.get('email', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        documento = request.POST.get('documento', '').strip()
+
+        if not fecha:
+            messages.error(request, 'Debes seleccionar una fecha para tu viaje.')
+            return redirect(f"{reverse('reservar_usuario')}?exp={exp_id}")
+
+        reserva, error = procesar_creacion_reserva(
+            request, experiencia, fecha, numero_personas, peticiones,
+            nombre=nombre, email=email, telefono=telefono, documento=documento
+        )
+
+        if error:
+            messages.error(request, error)
+            return redirect(f"{reverse('reservar_usuario')}?exp={exp_id}")
+
+        messages.success(
+            request,
+            f'¡Felicitaciones {reserva.usuario.first_name}! Tu reserva #{reserva.id} para "{experiencia.nombre}" '
+            f'ha sido creada exitosamente para el {fecha}. Total: ${reserva.precio_formateado} COP.'
+        )
+        return redirect(f"{reverse('perfil')}?layout=user#tab-reservas")
+
+    # GET
+    exp_id = request.GET.get('exp')
+    fecha_inicial = request.GET.get('fecha', '')
+    experiencias = Experiencia.objects.filter(estado=True).select_related('categoria').order_by('nombre')
+    exp_seleccionada = None
+    if exp_id and exp_id.isdigit():
+        exp_seleccionada = Experiencia.objects.filter(id=int(exp_id), estado=True).first()
+
+    context = {
+        'titulo': 'Crear Reserva | Orinoquia Explorer',
+        'experiencias': experiencias,
+        'exp_seleccionada': exp_seleccionada,
+        'fecha_inicial': fecha_inicial,
+    }
+    return render(request, "turismo/usuarios/crear_reserva.html", context)
+
 
 
 # ==================== ADMIN CRUD: DESTINOS ====================

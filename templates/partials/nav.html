@@ -25,6 +25,9 @@
                     <a class="nav-link" href="{% url 'index_usuario' %}#catalogo">Experiencias</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'reservar_usuario' %}active{% endif %}" href="{% url 'reservar_usuario' %}">Reservar</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'cultura_usuario' %}active{% endif %}" href="{% url 'cultura_usuario' %}">Cultura y Gastronomía</a>
                 </li>
                 <li class="nav-item">
