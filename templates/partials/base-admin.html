@@ -160,7 +160,7 @@
                     var f = fechaInput.value;
                     if (!f) return;
                     climaDiv.innerHTML = '<small class="text-muted"><span class="spinner-border spinner-border-sm me-1"></span>Consultando pronóstico...</small>';
-                    fetch('/api/clima-fecha/?fecha=' + f)
+                    fetch("{% url 'api_clima_fecha' %}?fecha=" + f)
                         .then(function(r) { return r.json(); })
                         .then(function(data) {
                             if (data.valido) {

@@ -327,7 +327,7 @@ document.addEventListener("DOMContentLoaded", function() {
             </div>
         `;
 
-        fetch(`/api/clima-fecha/?fecha=${fecha}`)
+        fetch(`{% url 'api_clima_fecha' %}?fecha=${fecha}`)
             .then(r => r.json())
             .then(data => {
                 if (data.valido) {
