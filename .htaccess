@@ -1,0 +1,41 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/bbingeni/orinoquiaxp"
+PassengerBaseURI "/orinoquiaxp"
+PassengerPython "/home/bbingeni/virtualenv/orinoquiaxp/3.12/bin/python"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+
+Options -Indexes
+PassengerEnabled on
+PassengerAppType wsgi
+PassengerStartupFile passenger_wsgi.py
+
+# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION BEGIN
+<IfModule Litespeed>
+SetEnv ALLOWED_HOSTS bbingenieros.online,www.bbingenieros.online,localhost,127.0.0.1
+SetEnv CSRF_TRUSTED_ORIGINS https://bbingenieros.online,https://www.bbingenieros.online
+SetEnv DB_ENGINE django.db.backends.mysql
+SetEnv DB_HOST localhost
+SetEnv DB_NAME bbingeni_orinoquia_xp
+SetEnv DB_PASSWORD .GdKf8?NY~!p!%Nd
+SetEnv DB_PORT 3306
+SetEnv DB_USER bbingeni_orinoquia_xp_user
+SetEnv DEBUG False
+SetEnv SECRET_KEY django-insecure-9=%(k0^@7)0u(&5gk-ji=c6a#el0(n)z_wcszymlvz6c_5qf24
+SetEnv FORCE_SCRIPT_NAME /orinoquiaxp
+SetEnv MEDIA_ROOT /home/bbingeni/public_html/orinoquiaxp/media
+SetEnv STATIC_ROOT /home/bbingeni/public_html/orinoquiaxp/static
+SetEnv LOGIN_URL /orinoquiaxp/usuarios/login/
+SetEnv LOGIN_REDIRECT_URL /orinoquiaxp/
+</IfModule>
+# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION END
+
+# Servir archivos estáticos y media directamente por Apache / LiteSpeed
+RewriteEngine On
+
+RewriteCond %{REQUEST_URI} ^/orinoquiaxp/media/(.*)$
+RewriteCond /home/bbingeni/public_html/orinoquiaxp/media/%1 -f
+RewriteRule ^media/(.*)$ /home/bbingeni/public_html/orinoquiaxp/media/$1 [L]
+
+RewriteCond %{REQUEST_URI} ^/orinoquiaxp/static/(.*)$
+RewriteCond /home/bbingeni/public_html/orinoquiaxp/static/%1 -f
+RewriteRule ^static/(.*)$ /home/bbingeni/public_html/orinoquiaxp/static/$1 [L]
